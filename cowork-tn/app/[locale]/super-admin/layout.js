@@ -16,7 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { signOut, getCurrentUser, hasRole, ROLES } from "@/lib/auth";
+import { signOut, getCurrentUser, hasRole, ROLES, getRedirectPath } from "@/lib/auth";
 import {
   LayoutDashboard,
   Building2,
@@ -58,13 +58,11 @@ export default function SuperAdminLayout({ children, params }) {
         }
         
         // Check if user is super admin
-        if (!hasRole(currentUser.profile?.role, ROLES.SUPER_ADMIN)) {
-          // Redirect to appropriate dashboard
-          if (currentUser.profile?.role === ROLES.ADMIN) {
-            router.push(`/${locale}/app`);
-          } else {
-            router.push(`/${locale}/my`);
-          }
+        const userRole = currentUser.profile?.role || ROLES.COWORKER;
+        if (userRole !== ROLES.SUPER_ADMIN && userRole !== "super_admin") {
+          // Redirect to appropriate dashboard based on role
+          const redirectPath = getRedirectPath(userRole, locale);
+          router.push(redirectPath);
           return;
         }
         

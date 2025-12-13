@@ -22,6 +22,20 @@ export default function LoginPage({ params }) {
   const [error, setError] = React.useState(null);
   const [success, setSuccess] = React.useState(false);
 
+  // Check if user is already logged in
+  React.useEffect(() => {
+    async function checkAuth() {
+      const { getCurrentUser, getRedirectPath } = await import("@/lib/auth");
+      const { user, profile } = await getCurrentUser();
+      if (user && profile) {
+        // User is already logged in, redirect based on role
+        const redirectPath = getRedirectPath(profile.role, locale);
+        router.push(redirectPath);
+      }
+    }
+    checkAuth();
+  }, [locale, router]);
+
   async function handleSubmit(event) {
     event.preventDefault();
     setError(null);
@@ -35,11 +49,26 @@ export default function LoginPage({ params }) {
         throw new Error(authError);
       }
 
+      if (!user) {
+        throw new Error("Erreur lors de la connexion");
+      }
+
       setSuccess(true);
 
-      // Redirect based on role
-      const role = profile?.role || ROLES.COWORKER;
-      const redirectPath = getRedirectPath(role, locale);
+      // Check if there's a redirect parameter in the URL
+      const searchParams = new URLSearchParams(window.location.search);
+      const redirectTo = searchParams.get("redirect");
+
+      // Determine redirect path based on role or redirect parameter
+      let redirectPath;
+      if (redirectTo && redirectTo.startsWith(`/${locale}/`)) {
+        // Use the redirect parameter if it exists and is valid
+        redirectPath = redirectTo;
+      } else {
+        // Otherwise, use role-based redirect
+        const role = profile?.role || ROLES.COWORKER;
+        redirectPath = getRedirectPath(role, locale);
+      }
       
       // Use window.location for hard redirect to ensure auth state is picked up
       setTimeout(() => {

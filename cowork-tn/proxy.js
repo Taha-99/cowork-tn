@@ -26,17 +26,79 @@ export default async function proxy(request) {
   
   // Extract locale from path
   const localeMatch = pathname.match(/^\/(fr|ar)/);
-  const locale = localeMatch ? localeMatch[1] : "fr";
+  const locale = localeMatch ? localeMatch[1] : defaultLocale;
   const pathWithoutLocale = pathname.replace(/^\/(fr|ar)/, "") || "/";
   
   // First, run the i18n middleware
   let response = intlMiddleware(request);
   
-  // Check if this is a public route
+  // Check if this is the landing page
+  const isLandingPage = pathWithoutLocale === "/";
+  
+  // Check if this is a public route (excluding landing page for authenticated users)
   const isPublicRoute = PUBLIC_ROUTES.some(route => 
     pathWithoutLocale === route || pathWithoutLocale.startsWith(route + "/")
   );
   
+  // For landing page, we need to check auth to redirect authenticated users
+  if (isLandingPage) {
+    // Create Supabase client for middleware
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      {
+        cookies: {
+          getAll() {
+            return request.cookies.getAll();
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              request.cookies.set(name, value);
+            });
+            response = NextResponse.next({
+              request,
+            });
+            cookiesToSet.forEach(({ name, value, options }) => {
+              response.cookies.set(name, value, options);
+            });
+          },
+        },
+      }
+    );
+    
+    // Check if user is authenticated
+    const { data: { user }, error } = await supabase.auth.getUser();
+    
+    if (user && !error) {
+      // Get user profile to determine role
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id);
+      
+      const profile = profiles && profiles.length > 0 ? profiles[0] : null;
+      const userRole = profile?.role || "coworker";
+      
+      // Redirect based on role
+      let redirectPath;
+      switch (userRole) {
+        case "super_admin":
+          redirectPath = `/${locale}/super-admin`;
+          break;
+        case "admin":
+          redirectPath = `/${locale}/app`;
+          break;
+        default:
+          redirectPath = `/${locale}/my`;
+      }
+      return NextResponse.redirect(new URL(redirectPath, request.url));
+    }
+    
+    // If not authenticated, allow access to landing page
+    return response;
+  }
+  
+  // For other public routes, allow access
   if (isPublicRoute) {
     return response;
   }
@@ -47,6 +109,7 @@ export default async function proxy(request) {
   );
   
   if (!protectedRoute) {
+    // Not a protected route, allow access
     return response;
   }
   
@@ -77,8 +140,6 @@ export default async function proxy(request) {
   // Get current user (this refreshes the session if needed)
   const { data: { user }, error } = await supabase.auth.getUser();
   
-  console.log("[Proxy] Protected route:", protectedRoute, "User:", user?.email, "Error:", error?.message);
-  
   if (!user || error) {
     // Redirect to login if not authenticated
     const url = new URL(`/${locale}/login`, request.url);
@@ -87,18 +148,14 @@ export default async function proxy(request) {
   }
   
   // Get user profile to check role
-  const { data: profile, error: profileError } = await supabase
+  const { data: profiles } = await supabase
     .from("profiles")
     .select("role")
-    .eq("id", user.id)
-    .single();
+    .eq("id", user.id);
   
-  console.log("[Proxy] Profile:", profile, "ProfileError:", profileError?.message);
-  
+  const profile = profiles && profiles.length > 0 ? profiles[0] : null;
   const userRole = profile?.role || "coworker";
   const allowedRoles = PROTECTED_ROUTES[protectedRoute];
-  
-  console.log("[Proxy] User role:", userRole, "Allowed:", allowedRoles, "Has access:", allowedRoles.includes(userRole));
   
   // Check if user has permission for this route
   if (!allowedRoles.includes(userRole)) {

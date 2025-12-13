@@ -76,21 +76,26 @@ export default async function LandingPage({ params }) {
 
   return (
     <main className="relative flex min-h-screen w-full flex-col overflow-hidden bg-slate-50 dark:bg-background">
+      {/* Full width header */}
+      <div className="w-full bg-card/80 backdrop-blur-xl">
+        <div className="container mx-auto px-4 py-4">
+          <SiteHeader locale={locale} />
+        </div>
+      </div>
+
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/10" />
         <div className="absolute left-1/2 top-10 h-[32rem] w-[32rem] -translate-x-1/2 rounded-full bg-primary/10 blur-[180px]" />
         <div className="absolute bottom-[-8rem] right-[-4rem] h-[26rem] w-[26rem] rounded-full bg-accent/10 blur-[160px]" />
       </div>
 
-      <div className="flex flex-1 flex-col">
-        <div className="flex flex-1 flex-col gap-12 px-4 pb-12 pt-6 sm:px-6 lg:px-16">
-          <SiteHeader locale={locale} />
-
-          <div className="flex flex-1 flex-col gap-12">
+      <div className="flex flex-1 flex-col w-full">
+        <div className="flex flex-1 flex-col gap-12 w-full px-4 pb-12 pt-6 sm:px-6 lg:px-8">
+          <div className="flex flex-1 flex-col gap-12 w-full">
             <Hero locale={locale} />
 
             {/* Social Proof Stats */}
-            <section className="grid grid-cols-2 gap-4 md:grid-cols-4">
+            <section className="grid grid-cols-2 gap-4 md:grid-cols-4 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               {stats.map((stat) => (
                 <div key={stat.label} className="group rounded-2xl border border-border/50 bg-card p-6 text-center shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 dark:bg-card/80 dark:border-border/30">
                   <p className="text-4xl font-display font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">{stat.value}</p>
@@ -99,8 +104,8 @@ export default async function LandingPage({ params }) {
               ))}
             </section>
 
-            <section id="features" className="space-y-8">
-              <div className="text-center max-w-3xl mx-auto">
+            <section id="features" className="space-y-8 w-full">
+              <div className="text-center w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <p className="text-sm font-semibold text-accent">{t("features.eyebrow")}</p>
                 <h2 className="mt-2 text-3xl font-display font-bold text-foreground">{t("features.title")}</h2>
                 <p className="mt-4 text-muted-foreground">
@@ -108,7 +113,7 @@ export default async function LandingPage({ params }) {
                 </p>
               </div>
 
-              <div className="grid gap-6 md:grid-cols-3">
+              <div className="grid gap-6 md:grid-cols-3 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {featureHighlights.map((feature) => {
                   const Icon = feature.icon;
                   return (
@@ -218,7 +223,7 @@ export default async function LandingPage({ params }) {
             </section>
 
             {/* CTA Banner */}
-            <section className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-primary to-primary/80 p-8 text-center text-white shadow-2xl md:p-12">
+            <section className="relative overflow-hidden w-full bg-gradient-to-r from-primary to-primary/80 p-8 text-center text-white shadow-2xl md:p-12">
               <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzRjMC0yLjIwOS0xLjc5MS00LTQtNHMtNCAxLjc5MS00IDQgMS43OTEgNCA0IDQgNC0xLjc5MSA0LTR6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-30" />
               <div className="relative space-y-4">
                 <div className="inline-flex items-center gap-2 rounded-full bg-white/20 px-4 py-1.5 text-sm font-medium backdrop-blur-sm">
@@ -228,7 +233,7 @@ export default async function LandingPage({ params }) {
                 <h2 className="text-3xl font-display font-bold md:text-4xl">
                   {t("cta.title")}
                 </h2>
-                <p className="mx-auto max-w-2xl text-white/90">
+                <p className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 text-white/90">
                   {t("cta.description")}
                 </p>
                 <div className="flex flex-wrap justify-center gap-4 pt-4">

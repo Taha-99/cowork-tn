@@ -25,7 +25,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -56,6 +55,13 @@ export default function SpacesManagementPage({ params }) {
   const [searchQuery, setSearchQuery] = React.useState("");
   const [filter, setFilter] = React.useState("all");
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+  const [newSpaceData, setNewSpaceData] = React.useState({
+    name: "",
+    location: "",
+    ownerName: "",
+    ownerEmail: "",
+    plan: "starter"
+  });
 
   React.useEffect(() => {
     loadSpaces();
@@ -79,6 +85,78 @@ export default function SpacesManagementPage({ params }) {
       console.error("Error loading spaces:", err);
     } finally {
       setIsLoading(false);
+    }
+  }
+
+  async function handleCreateSpace() {
+    try {
+      const supabase = getSupabaseClient();
+      
+      // First, create or get the owner profile
+      const { data: ownerData, error: ownerError } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("email", newSpaceData.ownerEmail)
+        .single();
+
+      let ownerId;
+      
+      if (ownerError || !ownerData) {
+        // Create new profile for owner
+        const { data: newProfile, error: createError } = await supabase
+          .from("profiles")
+          .insert({
+            full_name: newSpaceData.ownerName,
+            email: newSpaceData.ownerEmail,
+            role: "admin"
+          })
+          .select()
+          .single();
+
+        if (createError) throw createError;
+        ownerId = newProfile.id;
+      } else {
+        ownerId = ownerData.id;
+      }
+
+      // Create the space
+      const { data: spaceData, error: spaceError } = await supabase
+        .from("spaces")
+        .insert({
+          name: newSpaceData.name,
+          location: newSpaceData.location,
+          owner_id: ownerId,
+          plan: newSpaceData.plan,
+          status: "pending"
+        })
+        .select()
+        .single();
+
+      if (spaceError) throw spaceError;
+
+      // Update owner's space_id
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({ space_id: spaceData.id })
+        .eq("id", ownerId);
+
+      if (updateError) throw updateError;
+
+      // Reset form and refresh data
+      setNewSpaceData({
+        name: "",
+        location: "",
+        ownerName: "",
+        ownerEmail: "",
+        plan: "starter"
+      });
+      setIsDialogOpen(false);
+      loadSpaces();
+      
+      alert("Espace créé avec succès!");
+    } catch (error) {
+      console.error("Error creating space:", error);
+      alert("Erreur lors de la création de l'espace: " + error.message);
     }
   }
 
@@ -224,31 +302,65 @@ export default function SpacesManagementPage({ params }) {
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
                 <Label htmlFor="name">Nom de l'espace</Label>
-                <Input id="name" placeholder="CoWork Hub" />
+                <Input 
+                  id="name" 
+                  placeholder="CoWork Hub" 
+                  value={newSpaceData.name}
+                  onChange={(e) => setNewSpaceData({...newSpaceData, name: e.target.value})}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="location">Localisation</Label>
+                <Input 
+                  id="location" 
+                  placeholder="Tunis, Centre Ville" 
+                  value={newSpaceData.location}
+                  onChange={(e) => setNewSpaceData({...newSpaceData, location: e.target.value})}
+                />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="city">Ville</Label>
-                  <Input id="city" placeholder="Tunis" />
+                  <Label htmlFor="ownerName">Nom du propriétaire</Label>
+                  <Input 
+                    id="ownerName" 
+                    placeholder="Ahmed Ben Ali"
+                    value={newSpaceData.ownerName}
+                    onChange={(e) => setNewSpaceData({...newSpaceData, ownerName: e.target.value})}
+                  />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="capacity">Capacité</Label>
-                  <Input id="capacity" type="number" placeholder="50" />
+                  <Label htmlFor="ownerEmail">Email du propriétaire</Label>
+                  <Input 
+                    id="ownerEmail" 
+                    type="email" 
+                    placeholder="owner@example.com"
+                    value={newSpaceData.ownerEmail}
+                    onChange={(e) => setNewSpaceData({...newSpaceData, ownerEmail: e.target.value})}
+                  />
                 </div>
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="owner-email">Email du propriétaire</Label>
-                <Input id="owner-email" type="email" placeholder="owner@example.com" />
+                <Label htmlFor="plan">Plan</Label>
+                <select
+                  id="plan"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  value={newSpaceData.plan}
+                  onChange={(e) => setNewSpaceData({...newSpaceData, plan: e.target.value})}
+                >
+                  <option value="starter">Starter</option>
+                  <option value="pro">Pro</option>
+                  <option value="enterprise">Enterprise</option>
+                </select>
               </div>
             </div>
-            <DialogFooter>
+            <div className="flex items-center justify-end gap-3 pt-6 border-t">
               <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
                 Annuler
               </Button>
-              <Button onClick={() => setIsDialogOpen(false)}>
+              <Button onClick={handleCreateSpace}>
                 Créer l'espace
               </Button>
-            </DialogFooter>
+            </div>
           </DialogContent>
         </Dialog>
       </div>

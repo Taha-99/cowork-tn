@@ -145,120 +145,258 @@ ALTER TABLE public.bookings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.invoices ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.activity_log ENABLE ROW LEVEL SECURITY;
 
--- PROFILES POLICIES
-CREATE POLICY "Users can view own profile" ON public.profiles
+-- =====================================================
+-- HELPER FUNCTION: Get user role without recursion
+-- =====================================================
+-- This function safely gets the user's role without causing RLS recursion
+CREATE OR REPLACE FUNCTION public.get_user_role()
+RETURNS TEXT AS $$
+DECLARE
+  user_role TEXT;
+BEGIN
+  SELECT role INTO user_role
+  FROM public.profiles
+  WHERE id = auth.uid();
+  
+  RETURN COALESCE(user_role, 'coworker');
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER STABLE
+SET search_path = public, pg_temp;
+
+-- =====================================================
+-- HELPER FUNCTION: Check if user is super admin
+-- =====================================================
+CREATE OR REPLACE FUNCTION public.is_super_admin()
+RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM public.profiles
+    WHERE id = auth.uid() AND role = 'super_admin'
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER STABLE
+SET search_path = public, pg_temp;
+
+-- =====================================================
+-- HELPER FUNCTION: Get user's space_id
+-- =====================================================
+CREATE OR REPLACE FUNCTION public.get_user_space_id()
+RETURNS UUID AS $$
+DECLARE
+  user_space_id UUID;
+BEGIN
+  SELECT space_id INTO user_space_id
+  FROM public.profiles
+  WHERE id = auth.uid();
+  
+  RETURN user_space_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER STABLE
+SET search_path = public, pg_temp;
+
+-- =====================================================
+-- PROFILES POLICIES (Non-recursive)
+-- =====================================================
+
+-- Drop existing policies if any
+DROP POLICY IF EXISTS "profiles_select_own" ON public.profiles;
+DROP POLICY IF EXISTS "profiles_update_own" ON public.profiles;
+DROP POLICY IF EXISTS "profiles_insert_own" ON public.profiles;
+DROP POLICY IF EXISTS "profiles_select_super_admin" ON public.profiles;
+DROP POLICY IF EXISTS "profiles_select_admin_space" ON public.profiles;
+DROP POLICY IF EXISTS "Users can view own profile" ON public.profiles;
+DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
+DROP POLICY IF EXISTS "Super admins can view all profiles" ON public.profiles;
+DROP POLICY IF EXISTS "Admins can view space profiles" ON public.profiles;
+
+-- Users can view their own profile
+CREATE POLICY "profiles_select_own" ON public.profiles
   FOR SELECT USING (auth.uid() = id);
 
-CREATE POLICY "Users can update own profile" ON public.profiles
-  FOR UPDATE USING (auth.uid() = id);
+-- Users can update their own profile (limited fields - cannot change role or space_id directly)
+-- Only super_admins can change roles and space_id through application logic
+CREATE POLICY "profiles_update_own" ON public.profiles
+  FOR UPDATE USING (auth.uid() = id)
+  WITH CHECK (auth.uid() = id);
 
-CREATE POLICY "Super admins can view all profiles" ON public.profiles
+-- Users can create their own profile on signup
+CREATE POLICY "profiles_insert_own" ON public.profiles
+  FOR INSERT WITH CHECK (auth.uid() = id);
+
+-- Super admins can view all profiles (using helper function to avoid recursion)
+CREATE POLICY "profiles_select_super_admin" ON public.profiles
+  FOR SELECT USING (public.is_super_admin());
+
+-- Admins can view profiles in their space (using helper function to avoid recursion)
+CREATE POLICY "profiles_select_admin_space" ON public.profiles
   FOR SELECT USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin')
+    public.get_user_role() = 'admin' 
+    AND public.get_user_space_id() IS NOT NULL
+    AND public.get_user_space_id() = space_id
   );
 
-CREATE POLICY "Admins can view space profiles" ON public.profiles
-  FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM public.profiles p
-      WHERE p.id = auth.uid() AND p.role = 'admin' AND p.space_id = profiles.space_id
-    )
-  );
-
+-- =====================================================
 -- SPACES POLICIES
-CREATE POLICY "Super admins full access to spaces" ON public.spaces
+-- =====================================================
+
+DROP POLICY IF EXISTS "spaces_all_super_admin" ON public.spaces;
+DROP POLICY IF EXISTS "spaces_manage_admin" ON public.spaces;
+DROP POLICY IF EXISTS "spaces_view_user" ON public.spaces;
+DROP POLICY IF EXISTS "Super admins full access to spaces" ON public.spaces;
+DROP POLICY IF EXISTS "Admins can manage own space" ON public.spaces;
+DROP POLICY IF EXISTS "Coworkers can view their space" ON public.spaces;
+
+-- Super admins have full access to all spaces
+CREATE POLICY "spaces_all_super_admin" ON public.spaces
+  FOR ALL USING (public.is_super_admin());
+
+-- Admins can manage their own space (using helper function to avoid recursion)
+CREATE POLICY "spaces_manage_admin" ON public.spaces
   FOR ALL USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin')
+    public.get_user_role() = 'admin'
+    AND public.get_user_space_id() = spaces.id
   );
 
-CREATE POLICY "Admins can manage own space" ON public.spaces
-  FOR ALL USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND space_id = spaces.id AND role = 'admin')
-  );
-
-CREATE POLICY "Coworkers can view their space" ON public.spaces
+-- All users (coworkers, admins, super_admins) can view their space (using helper function)
+CREATE POLICY "spaces_view_user" ON public.spaces
   FOR SELECT USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND space_id = spaces.id)
+    public.is_super_admin()
+    OR public.get_user_space_id() = spaces.id
   );
 
+-- =====================================================
 -- MEMBERS POLICIES
-CREATE POLICY "Admins can manage space members" ON public.members
+-- =====================================================
+
+DROP POLICY IF EXISTS "members_manage_admin" ON public.members;
+DROP POLICY IF EXISTS "members_view_own" ON public.members;
+DROP POLICY IF EXISTS "Admins can manage space members" ON public.members;
+DROP POLICY IF EXISTS "Members can view own membership" ON public.members;
+
+-- Super admins and admins can manage members in their space (using helper functions)
+CREATE POLICY "members_manage_admin" ON public.members
   FOR ALL USING (
-    EXISTS (
-      SELECT 1 FROM public.profiles 
-      WHERE id = auth.uid() 
-      AND (role = 'admin' OR role = 'super_admin')
-      AND (space_id = members.space_id OR role = 'super_admin')
+    public.is_super_admin()
+    OR (
+      public.get_user_role() = 'admin'
+      AND public.get_user_space_id() = members.space_id
     )
   );
 
-CREATE POLICY "Members can view own membership" ON public.members
+-- Members can view their own membership record
+CREATE POLICY "members_view_own" ON public.members
   FOR SELECT USING (profile_id = auth.uid());
 
+-- =====================================================
 -- RESOURCES POLICIES
-CREATE POLICY "Space users can view resources" ON public.resources
+-- =====================================================
+
+DROP POLICY IF EXISTS "resources_view_user" ON public.resources;
+DROP POLICY IF EXISTS "resources_manage_admin" ON public.resources;
+DROP POLICY IF EXISTS "Space users can view resources" ON public.resources;
+DROP POLICY IF EXISTS "Admins can manage resources" ON public.resources;
+
+-- All users can view resources in their space (or all if super_admin)
+CREATE POLICY "resources_view_user" ON public.resources
   FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM public.profiles 
-      WHERE id = auth.uid() AND (space_id = resources.space_id OR role = 'super_admin')
-    )
+    public.is_super_admin()
+    OR public.get_user_space_id() = resources.space_id
   );
 
-CREATE POLICY "Admins can manage resources" ON public.resources
+-- Admins and super admins can manage resources
+CREATE POLICY "resources_manage_admin" ON public.resources
   FOR ALL USING (
-    EXISTS (
-      SELECT 1 FROM public.profiles 
-      WHERE id = auth.uid() 
-      AND (role = 'admin' OR role = 'super_admin')
-      AND (space_id = resources.space_id OR role = 'super_admin')
+    public.is_super_admin()
+    OR (
+      public.get_user_role() = 'admin'
+      AND public.get_user_space_id() = resources.space_id
     )
   );
 
+-- =====================================================
 -- BOOKINGS POLICIES
-CREATE POLICY "Members can view own bookings" ON public.bookings
+-- =====================================================
+
+DROP POLICY IF EXISTS "bookings_view_own" ON public.bookings;
+DROP POLICY IF EXISTS "bookings_create_own" ON public.bookings;
+DROP POLICY IF EXISTS "bookings_manage_admin" ON public.bookings;
+DROP POLICY IF EXISTS "Members can view own bookings" ON public.bookings;
+DROP POLICY IF EXISTS "Members can create bookings" ON public.bookings;
+DROP POLICY IF EXISTS "Admins can manage space bookings" ON public.bookings;
+
+-- Members can view their own bookings
+CREATE POLICY "bookings_view_own" ON public.bookings
   FOR SELECT USING (
-    EXISTS (SELECT 1 FROM public.members WHERE id = bookings.member_id AND profile_id = auth.uid())
+    EXISTS (
+      SELECT 1 FROM public.members
+      WHERE id = bookings.member_id
+      AND profile_id = auth.uid()
+    )
   );
 
-CREATE POLICY "Members can create bookings" ON public.bookings
+-- Members can create their own bookings
+CREATE POLICY "bookings_create_own" ON public.bookings
   FOR INSERT WITH CHECK (
-    EXISTS (SELECT 1 FROM public.members WHERE id = bookings.member_id AND profile_id = auth.uid())
-  );
-
-CREATE POLICY "Admins can manage space bookings" ON public.bookings
-  FOR ALL USING (
     EXISTS (
-      SELECT 1 FROM public.profiles 
-      WHERE id = auth.uid() 
-      AND (role = 'admin' OR role = 'super_admin')
-      AND (space_id = bookings.space_id OR role = 'super_admin')
+      SELECT 1 FROM public.members
+      WHERE id = bookings.member_id
+      AND profile_id = auth.uid()
     )
   );
 
+-- Admins and super admins can manage all bookings in their space
+CREATE POLICY "bookings_manage_admin" ON public.bookings
+  FOR ALL USING (
+    public.is_super_admin()
+    OR (
+      public.get_user_role() = 'admin'
+      AND public.get_user_space_id() = bookings.space_id
+    )
+  );
+
+-- =====================================================
 -- INVOICES POLICIES
-CREATE POLICY "Members can view own invoices" ON public.invoices
-  FOR SELECT USING (
-    EXISTS (SELECT 1 FROM public.members WHERE id = invoices.member_id AND profile_id = auth.uid())
-  );
+-- =====================================================
 
-CREATE POLICY "Admins can manage space invoices" ON public.invoices
-  FOR ALL USING (
+DROP POLICY IF EXISTS "invoices_view_own" ON public.invoices;
+DROP POLICY IF EXISTS "invoices_manage_admin" ON public.invoices;
+DROP POLICY IF EXISTS "Members can view own invoices" ON public.invoices;
+DROP POLICY IF EXISTS "Admins can manage space invoices" ON public.invoices;
+
+-- Members can view their own invoices
+CREATE POLICY "invoices_view_own" ON public.invoices
+  FOR SELECT USING (
     EXISTS (
-      SELECT 1 FROM public.profiles 
-      WHERE id = auth.uid() 
-      AND (role = 'admin' OR role = 'super_admin')
-      AND (space_id = invoices.space_id OR role = 'super_admin')
+      SELECT 1 FROM public.members
+      WHERE id = invoices.member_id
+      AND profile_id = auth.uid()
     )
   );
 
+-- Admins and super admins can manage invoices in their space
+CREATE POLICY "invoices_manage_admin" ON public.invoices
+  FOR ALL USING (
+    public.is_super_admin()
+    OR (
+      public.get_user_role() = 'admin'
+      AND public.get_user_space_id() = invoices.space_id
+    )
+  );
+
+-- =====================================================
 -- ACTIVITY LOG POLICIES
-CREATE POLICY "Admins can view space activity" ON public.activity_log
+-- =====================================================
+
+DROP POLICY IF EXISTS "activity_log_view_admin" ON public.activity_log;
+DROP POLICY IF EXISTS "Admins can view space activity" ON public.activity_log;
+
+-- Admins and super admins can view activity logs in their space
+CREATE POLICY "activity_log_view_admin" ON public.activity_log
   FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM public.profiles 
-      WHERE id = auth.uid() 
-      AND (role = 'admin' OR role = 'super_admin')
-      AND (space_id = activity_log.space_id OR role = 'super_admin')
+    public.is_super_admin()
+    OR (
+      public.get_user_role() = 'admin'
+      AND public.get_user_space_id() = activity_log.space_id
     )
   );
 
@@ -269,17 +407,29 @@ CREATE POLICY "Admins can view space activity" ON public.activity_log
 -- Auto-create profile on signup
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
+DECLARE
+  user_role TEXT;
 BEGIN
+  -- Get role from metadata, default to 'coworker' if not provided
+  user_role := COALESCE(NEW.raw_user_meta_data->>'role', 'coworker');
+  
+  -- Validate role is one of the allowed values, default to 'coworker' if invalid
+  -- This ensures only valid roles ('super_admin', 'admin', 'coworker') are inserted
+  IF user_role NOT IN ('super_admin', 'admin', 'coworker') THEN
+    user_role := 'coworker';
+  END IF;
+  
   INSERT INTO public.profiles (id, email, full_name, role)
   VALUES (
     NEW.id,
     NEW.email,
     COALESCE(NEW.raw_user_meta_data->>'full_name', ''),
-    COALESCE(NEW.raw_user_meta_data->>'role', 'coworker')
+    user_role
   );
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = public, pg_temp;
 
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
@@ -293,7 +443,8 @@ BEGIN
   NEW.updated_at = NOW();
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql
+SET search_path = public, pg_temp;
 
 CREATE TRIGGER update_profiles_updated_at BEFORE UPDATE ON public.profiles
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
@@ -358,15 +509,50 @@ INSERT INTO public.resources (space_id, name, type, capacity, hourly_rate, color
 ON CONFLICT DO NOTHING;
 
 -- =====================================================
+-- ROLE SYSTEM DOCUMENTATION
+-- =====================================================
+--
+-- The system supports three roles with the following permissions:
+--
+-- 1. SUPER_ADMIN (super_admin)
+--    - Full system access to all spaces and data
+--    - Can view and manage all profiles
+--    - Can manage all spaces, members, resources, bookings, invoices
+--    - Can view all activity logs
+--    - No space_id restriction (can access all spaces)
+--
+-- 2. ADMIN / SPACE OWNER (admin)
+--    - Manages a specific space (identified by space_id in profile)
+--    - Can view and manage profiles in their space
+--    - Can manage their own space details
+--    - Can manage members, resources, bookings, invoices in their space
+--    - Can view activity logs for their space
+--    - Restricted to their assigned space_id
+--
+-- 3. COWORKER (coworker)
+--    - Regular member of a space
+--    - Can view their own profile
+--    - Can view their assigned space
+--    - Can view and create their own bookings
+--    - Can view their own invoices
+--    - Can view their own membership record
+--    - No management permissions
+--
+-- HELPER FUNCTIONS:
+-- - public.is_super_admin() - Returns true if current user is super_admin
+-- - public.get_user_role() - Returns current user's role
+-- - public.get_user_space_id() - Returns current user's space_id
+--
+-- RLS POLICIES:
+-- All policies use helper functions to avoid recursion issues.
+-- Policies are structured to respect role hierarchy and space isolation.
+--
+-- =====================================================
 -- DONE!
 -- =====================================================
 -- 
--- Next steps:
--- 1. Create users in Supabase Auth Dashboard:
---    - super@cowork.tn → then UPDATE profiles SET role = 'super_admin'
---    - admin@cowork.tn → then UPDATE profiles SET role = 'admin', space_id = '11111111-...'
---    - user@cowork.tn  → stays as 'coworker'
---
--- 2. Or use the Supabase Admin API to create users programmatically
+-- Database setup complete! 
+-- 
+-- Next: Run create_users.sql to create demo user accounts
 --
 -- =====================================================

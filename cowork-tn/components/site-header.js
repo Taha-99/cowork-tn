@@ -16,8 +16,8 @@ export function SiteHeader({ locale }) {
   ];
 
   return (
-    <header className="sticky top-4 z-30 mx-auto max-w-5xl">
-      <div className="flex items-center justify-between rounded-2xl border border-border/40 bg-card/80 px-4 py-3 shadow-soft backdrop-blur-xl dark:border-border/30 dark:bg-card/60 dark:shadow-none">
+    <header className="sticky top-0 z-30 w-full">
+      <div className="flex items-center justify-between w-full border-b border-border/40 bg-card/80 px-6 py-4 shadow-soft backdrop-blur-xl dark:border-border/30 dark:bg-card/60 dark:shadow-none">
         <Link href={`/${locale}`} className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-sm">
             C

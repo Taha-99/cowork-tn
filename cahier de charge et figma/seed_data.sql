@@ -60,8 +60,8 @@ WITH
       END,
       CASE u.email
         WHEN 'amina@example.com' THEN 'super_admin'
-        WHEN 'karim@example.com' THEN 'space_admin'
-        WHEN 'nadia@example.com' THEN 'space_admin'
+        WHEN 'karim@example.com' THEN 'admin'
+        WHEN 'nadia@example.com' THEN 'admin'
         ELSE 'coworker'
       END,
       CASE u.email

@@ -30,16 +30,16 @@ export async function signIn(email, password) {
   }
 
   // Fetch user profile with role
-  const { data: profile, error: profileError } = await supabase
+  const { data: profiles, error: profileError } = await supabase
     .from("profiles")
     .select("*")
-    .eq("id", data.user.id)
-    .single();
+    .eq("id", data.user.id);
 
   if (profileError) {
     return { user: data.user, profile: null, error: null };
   }
 
+  const profile = profiles && profiles.length > 0 ? profiles[0] : null;
   return { user: data.user, profile, error: null };
 }
 
@@ -94,12 +94,16 @@ export async function getCurrentUser() {
     return { user: null, profile: null, error: error?.message || null };
   }
 
-  const { data: profile } = await supabase
+  const { data: profiles, error: profileError } = await supabase
     .from("profiles")
     .select("*")
-    .eq("id", user.id)
-    .single();
+    .eq("id", user.id);
 
+  if (profileError) {
+    return { user, profile: null, error: null };
+  }
+
+  const profile = profiles && profiles.length > 0 ? profiles[0] : null;
   return { user, profile, error: null };
 }
 
@@ -150,16 +154,27 @@ export function hasRole(userRole, requiredRole) {
  * Get redirect path based on role
  */
 export function getRedirectPath(role, locale = "fr") {
-  switch (role) {
-    case ROLES.SUPER_ADMIN:
-      return `/${locale}/super-admin`;
-    case ROLES.ADMIN:
-      return `/${locale}/app`;
-    case ROLES.COWORKER:
-      return `/${locale}/my`;
-    default:
-      return `/${locale}/login`;
+  // Use the role as-is if provided, otherwise default to coworker
+  // Check explicitly for null/undefined, not falsy values (empty string could be valid)
+  const normalizedRole = (role === null || role === undefined) ? ROLES.COWORKER : role;
+  
+  // Check for super_admin first (exact match)
+  if (normalizedRole === ROLES.SUPER_ADMIN || normalizedRole === "super_admin") {
+    return `/${locale}/super-admin`;
   }
+  
+  // Check for admin
+  if (normalizedRole === ROLES.ADMIN || normalizedRole === "admin") {
+    return `/${locale}/app`;
+  }
+  
+  // Check for coworker
+  if (normalizedRole === ROLES.COWORKER || normalizedRole === "coworker") {
+    return `/${locale}/my`;
+  }
+  
+  // Default fallback
+  return `/${locale}/login`;
 }
 
 /**
