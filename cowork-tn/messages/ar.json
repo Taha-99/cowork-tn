@@ -1,0 +1,497 @@
+{
+  "nav": {
+    "product": "المنصّة",
+    "pricing": "الأسعار",
+    "features": "الخصائص",
+    "login": "تسجيل الدخول",
+    "start": "إطلاق مساحتي"
+  },
+  "hero": {
+    "tagline": "منصة إدارة المكاتب المشتركة في تونس",
+    "title": "سيطر على الحجوزات والاشتراكات والفوترة من لوحة واحدة",
+    "subtitle": "Cowork.tn يعوّض Google Sheets وWhatsApp ويمنح فريقك تجربة عصرية بالعربي.",
+    "ctaPrimary": "تجربة مجانية 14 يوماً",
+    "ctaSecondary": "اكتشف الباقات",
+    "meta": "الإطلاق التجاري 16 جانفي 2026"
+  },
+  "pricing": {
+    "tag": "خطط واضحة",
+    "title": "عروض تناسب كل مساحة",
+    "subtitle": "دفع شهري بالدينار التونسي مع إمكانية الترقية في أي وقت.",
+    "cta": "اختيار الخطة",
+    "popular": "الأكثر شعبية",
+    "perMonth": "/شهر"
+  },
+  "plans": {
+    "basic": {
+      "title": "أساسي",
+      "description": "مثالي لإطلاق فضاء مستقل.",
+      "perk1": "حجوزات غير محدودة",
+      "perk2": "فواتير PDF تلقائية",
+      "perk3": "دعم عبر البريد خلال 24 ساعة"
+    },
+    "pro": {
+      "title": "احترافي",
+      "description": "للفضاءات متعددة القاعات التي تريد توحيد الإدارة.",
+      "perk1": "أتمتة Stripe",
+      "perk2": "تحليلات الإشغال",
+      "perk3": "تكامل WhatsApp"
+    },
+    "premium": {
+      "title": "مميز",
+      "description": "للفضاءات متعددة المواقع مع دعم مخصص 7/7.",
+      "perk1": "خريطة 3D تفاعلية",
+      "perk2": "تأهيل مخصص",
+      "perk3": "SLA أولوية"
+    }
+  },
+  "footer": {
+    "legal": "الجوانب القانونية",
+    "privacy": "الخصوصية",
+    "support": "الدعم",
+    "note": "منصة في طور التطوير لفضاءات العمل التونسية. تكامل Supabase وStripe وQR سيتم خلال السبرينت القادم."
+  },
+  "loginPage": {
+    "demoHint": "حسابات تجريبية:"
+  },
+  "stats": {
+    "occupancy": {
+      "label": "نسبة الإشغال",
+      "meta": "آخر 30 يوماً"
+    },
+    "members": {
+      "label": "الأعضاء النشطون",
+      "meta": "+34 هذا الشهر"
+    },
+    "revenue": {
+      "label": "إيراد شهري متكرر",
+      "meta": "خطط Pro وPremium"
+    },
+    "bookings": {
+      "label": "حجوزات قادمة",
+      "meta": "خلال 7 أيام"
+    }
+  },
+  "canvas": {
+    "hint": "منطقة تفاعلية لرسم المكاتب والقاعات.",
+    "todo": "TODO: تفعيل السحب والإفلات والمزامنة المباشرة."
+  },
+  "dashboardNav": {
+    "dashboard": "اللوحة",
+    "members": "الأعضاء",
+    "bookings": "الحجوزات",
+    "billing": "الفوترة"
+  },
+  "dashboard": {
+    "title": "لوحة الفضاء",
+    "subtitle": "تابع الإشغال والدفع والحضور في الوقت الحقيقي.",
+    "plan": "الخريطة التفاعلية",
+    "activity": "آخر الأنشطة",
+    "activityDescription": "تكامل Stripe وأحداث Supabase",
+    "activityEmpty": "لا نشاط حديث حالياً.",
+    "spaceMeta": "مساحة {space} • {city}",
+    "membersTotalLabel": "عضو إجمالاً"
+  },
+  "membersPage": {
+    "title": "إدارة الأعضاء",
+    "subtitle": "QR check-in, الاشتراكات وRLS مع Supabase.",
+    "searchPlaceholder": "ابحث عن الأعضاء…",
+    "addMember": "إضافة عضو",
+    "columns": {
+      "member": "العضو",
+      "email": "البريد",
+      "plan": "الخطة",
+      "status": "الحالة",
+      "actions": "إجراءات"
+    },
+    "statusLabels": {
+      "active": "نشط",
+      "inactive": "غير نشط",
+      "suspended": "موقوف"
+    },
+    "plans": {
+      "unlimited": "Premium",
+      "10_days": "باقة 10 أيام",
+      "day_pass": "Day pass",
+      "none": "بدون خطة"
+    },
+    "actions": {
+      "viewProfile": "عرض الملف"
+    },
+    "empty": "لا يوجد أعضاء حالياً.",
+    "error": "تعذر تحميل الأعضاء.",
+    "retryHint": "تحقّق من Supabase أو أعد المحاولة لاحقاً."
+  },
+  "bookingsPage": {
+    "title": "الحجوزات",
+    "subtitle": "سحب وإفلات للمكاتب والقاعات مع منع الno-show",
+    "empty": "لا حجوزات قادمة الآن.",
+    "newBooking": "حجز جديد",
+    "miniCalendar": "التقويم المصغر",
+    "resources": {
+      "title": "مواردي",
+      "available": "متاح",
+      "busy": "مشغول",
+      "empty": "لا توجد موارد بعد."
+    },
+    "upcoming": "أقرب الحجوزات",
+    "unknownResource": "المورد",
+    "unknownMember": "العضو",
+    "calendarTitle": "مخطط الأسبوع",
+    "weekNumber": "الأسبوع {week}",
+    "viewModes": {
+      "day": "يوم",
+      "week": "أسبوع"
+    },
+    "statusLabels": {
+      "pending": "قيد المراجعة",
+      "confirmed": "مؤكد",
+      "cancelled": "ملغى",
+      "checked_in": "تم الحضور"
+    },
+    "error": "تعذّر تحميل الحجوزات."
+  },
+  "billingPage": {
+    "title": "الفوترة والاشتراكات",
+    "subtitle": "متزامن مع Stripe Billing وتوليد PDF تلقائي.",
+    "columns": {
+      "invoice": "الفاتورة",
+      "member": "العضو",
+      "amount": "المبلغ",
+      "status": "الحالة"
+    },
+    "tabs": {
+      "invoices": "الفواتير",
+      "analytics": "الإحصائيات"
+    },
+    "tableEmpty": "لا توجد فواتير حالياً.",
+    "statusLabels": {
+      "draft": "مسودة",
+      "sent": "مرسلة",
+      "paid": "مدفوعة",
+      "overdue": "متأخرة"
+    },
+    "overview": {
+      "collected": {
+        "label": "المبالغ المحصلة",
+        "helper": "آخر ثلاثة أشهر"
+      },
+      "outstanding": {
+        "label": "قيد التحصيل",
+        "helper": "فواتير مرسلة لم تُدفع"
+      },
+      "overdue": {
+        "label": "فواتير متأخرة",
+        "helper": "بعد أجل الاستحقاق"
+      },
+      "collectionRate": {
+        "label": "نسبة التحصيل",
+        "helper": "مدفوع / مفوتر"
+      }
+    },
+    "chart": {
+      "title": "التدفق الشهري",
+      "subtitle": "مقارنة المدفوع بالمعلّق (6 أشهر)",
+      "legendPaid": "مدفوع",
+      "legendPending": "معلّق",
+      "empty": "لا تتوفر بيانات كافية للرسم البياني."
+    },
+    "statusBreakdown": {
+      "title": "حسب الحالة",
+      "subtitle": "المبالغ وعدد الفواتير لكل حالة",
+      "count": "{count} فاتورة"
+    }
+  },
+  "auth": {
+    "loginTitle": "دخول المسؤول",
+    "loginSubtitle": "استعمل بريدك المرتبط بـ Supabase multi-tenant.",
+    "registerTitle": "إنشاء مساحة جديدة",
+    "registerSubtitle": "ثلاث خطوات: بيانات، مخطط، باقات."
+  },
+  "registerPage": {
+    "eyebrow": "ONBOARDING",
+    "title": "أنشئ فضاءك / Create your space",
+    "subtitle": "خمس مراحل سريعة: معلومات شخصية، تفاصيل الفضاء، اختيار الخطة، الدفع، التأكيد.",
+    "steps": {
+      "personal": {
+        "title": "معلومات شخصية",
+        "subtitle": "هوية + دخول"
+      },
+      "space": {
+        "title": "تفاصيل الفضاء",
+        "subtitle": "المدينة، السعة"
+      },
+      "plan": {
+        "title": "اختيار الخطة",
+        "subtitle": "Basic / Pro / Premium"
+      },
+      "payment": {
+        "title": "الدفع",
+        "subtitle": "Stripe Billing"
+      },
+      "confirmation": {
+        "title": "تأكيد",
+        "subtitle": "تفعيل الحساب"
+      }
+    },
+    "currentStep": {
+      "title": "المعلومات الشخصية / Informations personnelles",
+      "subtitle": "الرجاء إدخال بياناتك للانطلاق. Veuillez saisir vos coordonnées."
+    },
+    "fields": {
+      "fullName": "الاسم الكامل / Nom complet",
+      "email": "البريد الإلكتروني / Email",
+      "password": "كلمة السر / Mot de passe",
+      "phone": "الهاتف / Téléphone",
+      "spaceName": "اسم الفضاء / Nom de l’espace",
+      "city": "المدينة / Ville",
+      "capacity": "عدد المكاتب / Nombre de postes",
+      "pitch": "وصف مختصر / Pitch"
+    },
+    "placeholders": {
+      "fullName": "الاسم و اللقب",
+      "email": "you@example.com",
+      "phone": "+216 XX XXX XXX",
+      "spaceName": "مثال: Hive Tunis",
+      "city": "تونس، صفاقس…",
+      "capacity": "40",
+      "pitch": "الخدمات، القيمة المضافة، المجتمع"
+    },
+    "cta": "تابع لاختيار الخطة"
+  },
+  "superAdmin": {
+    "title": "لوحة المؤسّس",
+    "subtitle": "قائمة بكل الفضاءات وحالتها بالوقت الحقيقي.",
+    "todo": "TODO: ربط أدوار المؤسس وRLS."
+  },
+  "mySpace": {
+    "title": "مساحتي",
+    "subtitle": "تابع رصيدك، حجوزاتك وفواتيرك الشخصية.",
+    "cta": "تعديل الاشتراك"
+  },
+  "profileMenu": {
+    "placeholder": "المستخدم",
+    "signedInAs": "مسجل باسم",
+    "profile": "الملف الشخصي والإعدادات",
+    "billing": "بوابة الفوترة",
+    "logout": "تسجيل الخروج"
+  },
+  "coworkerNav": {
+    "memberBadge": "عضو",
+    "overview": "الرئيسية",
+    "reservations": "الحجوزات",
+    "invoices": "الفواتير",
+    "profile": "الملف"
+  },
+  "coworkerDashboard": {
+    "welcomeTitle": "مرحباً بك في مساحتك",
+    "welcomeSubtitle": "تابع حجوزاتك، رصيدك وفواتيرك.",
+    "stats": {
+      "plan": "الخطة الحالية",
+      "credits": "الرصيد المتبقي",
+      "days": "أيام",
+      "nextBooking": "الحجز القادم",
+      "noBooking": "لا حجوزات",
+      "pendingPayment": "مبلغ مستحق",
+      "dueBy": "الاستحقاق:",
+      "allPaid": "كل الفواتير مسددة!"
+    },
+    "quickActions": {
+      "title": "إجراءات سريعة",
+      "newBooking": "حجز مكتب",
+      "payInvoice": "دفع فاتورة",
+      "updateProfile": "تعديل الملف"
+    },
+    "activity": {
+      "title": "النشاط الأخير",
+      "subtitle": "آخر إجراءاتك في الفضاء",
+      "types": {
+        "checkin": "تسجيل حضور",
+        "booking": "حجز جديد",
+        "payment": "دفع تم"
+      },
+      "labels": {
+        "checkin": "حاضر",
+        "booking": "محجوز",
+        "payment": "مدفوع"
+      }
+    },
+    "spaceInfo": {
+      "label": "فضاء العمل المشترك",
+      "contact": "تواصل مع الإدارة"
+    }
+  },
+  "coworkerReservations": {
+    "title": "حجوزاتي",
+    "subtitle": "إدارة حجوزات المكاتب والقاعات.",
+    "newBooking": "حجز جديد",
+    "quickBook": {
+      "title": "حجز سريع",
+      "subtitle": "اختر مورداً للحجز الفوري.",
+      "available": "متاح",
+      "busy": "مشغول"
+    },
+    "upcoming": {
+      "title": "الحجوزات القادمة",
+      "subtitle": "جلساتك المقبلة.",
+      "empty": "لا حجوزات قادمة."
+    },
+    "past": {
+      "title": "السجل",
+      "subtitle": "حجوزاتك السابقة.",
+      "empty": "لا سجل متوفر."
+    },
+    "status": {
+      "pending": "قيد الانتظار",
+      "confirmed": "مؤكد",
+      "checked_in": "منتهي",
+      "cancelled": "ملغي"
+    },
+    "actions": {
+      "details": "التفاصيل"
+    }
+  },
+  "coworkerInvoices": {
+    "title": "فواتيري",
+    "subtitle": "استعرض وسدد فواتيرك.",
+    "summary": {
+      "pending": "المبلغ المستحق",
+      "invoices": "فاتورة",
+      "allPaid": "كل الفواتير مسددة!"
+    },
+    "subscription": {
+      "current": "الاشتراك الحالي",
+      "nextBilling": "الفوترة القادمة"
+    },
+    "list": {
+      "title": "سجل الفواتير",
+      "subtitle": "كل فواتيرك مع إمكانية التحميل PDF."
+    },
+    "columns": {
+      "invoice": "الفاتورة",
+      "description": "الوصف",
+      "date": "التاريخ",
+      "amount": "المبلغ",
+      "status": "الحالة",
+      "actions": "إجراءات"
+    },
+    "status": {
+      "draft": "مسودة",
+      "sent": "مرسلة",
+      "paid": "مدفوعة",
+      "overdue": "متأخرة"
+    },
+    "actions": {
+      "pay": "دفع",
+      "payNow": "ادفع الآن"
+    },
+    "paymentMethod": {
+      "title": "طريقة الدفع",
+      "subtitle": "إدارة بطاقتك البنكية.",
+      "expires": "تنتهي",
+      "manage": "إدارة عبر Stripe"
+    }
+  },
+  "coworkerProfile": {
+    "title": "ملفي الشخصي",
+    "subtitle": "إدارة بياناتك الشخصية وتفضيلاتك.",
+    "memberSince": "عضو منذ",
+    "accountStatus": "حالة الحساب",
+    "statusLabels": {
+      "active": "نشط",
+      "inactive": "غير نشط"
+    },
+    "personalInfo": {
+      "title": "المعلومات الشخصية",
+      "subtitle": "بيانات الاتصال الخاصة بك."
+    },
+    "fields": {
+      "fullName": "الاسم الكامل",
+      "email": "البريد الإلكتروني",
+      "phone": "الهاتف",
+      "space": "الفضاء المنتسب إليه"
+    },
+    "subscription": {
+      "title": "الاشتراك",
+      "subtitle": "تفاصيل خطتك الحالية.",
+      "renewsAt": "التجديد في"
+    },
+    "preferences": {
+      "title": "التفضيلات",
+      "subtitle": "تخصيص تجربتك.",
+      "notifications": "الإشعارات",
+      "notificationsDesc": "استلام إيميلات الحجز والفوترة.",
+      "darkMode": "الوضع الداكن",
+      "darkModeDesc": "التبديل للثيم الداكن.",
+      "language": "اللغة",
+      "languageDesc": "اختيار لغة الواجهة."
+    },
+    "actions": {
+      "edit": "تعديل",
+      "changePlan": "تغيير الخطة",
+      "renewNow": "تجديد"
+    },
+    "danger": {
+      "title": "منطقة الخطر",
+      "subtitle": "إجراءات لا يمكن التراجع عنها.",
+      "deleteAccount": "حذف حسابي"
+    }
+  },
+  "homepage": {
+    "stats": {
+      "spaces": "فضاءات مُدارة",
+      "members": "أعضاء نشطون",
+      "satisfaction": "رضا العملاء",
+      "support": "دعم متوفر"
+    },
+    "features": {
+      "eyebrow": "المميزات الرئيسية",
+      "title": "مصمم لفريقك",
+      "description": "تصميم متناسق وتفاعلات سلسة لانطباع أول مقنع.",
+      "operations": {
+        "tag": "العمليات",
+        "title": "متعدد المستأجرين مع Supabase",
+        "description": "Auth RLS، تسجيل سريع، إنشاء فضاءات غير محدودة وإدارة الصلاحيات."
+      },
+      "billing": {
+        "tag": "الفوترة",
+        "title": "Stripe مدمج",
+        "description": "خطط Basic / Pro / Premium، دفع متكرر بالدينار وفواتير PDF تلقائية."
+      },
+      "experience": {
+        "tag": "التجربة",
+        "title": "بوابة أعضاء متميزة",
+        "description": "حجوزات ذاتية، متابعة الرصيد، QR ديناميكي وإشعارات متعددة اللغات."
+      }
+    },
+    "additional": {
+      "eyebrow": "والمزيد أيضاً",
+      "title": "كل ما تحتاجه",
+      "performance": { "title": "أداء مثالي", "description": "Next.js 15 مع SSR وتحسين تلقائي" },
+      "multilingual": { "title": "متعدد اللغات", "description": "الفرنسية والعربية مع RTL أصلي" },
+      "analytics": { "title": "تحليلات فورية", "description": "لوحات تحكم ومؤشرات مباشرة" },
+      "qrcode": { "title": "QR ديناميكي", "description": "تسجيل دخول/خروج آلي للأعضاء" }
+    },
+    "howItWorks": {
+      "eyebrow": "كيف يعمل",
+      "title": "ابدأ في 3 خطوات",
+      "step1": { "title": "أنشئ فضاءك", "description": "سجّل وجهّز أول فضاء عمل مشترك في دقائق." },
+      "step2": { "title": "ادعُ أعضاءك", "description": "أضف زملاءك وحدد اشتراكاتهم وصلاحياتهم." },
+      "step3": { "title": "أدر كل شيء بسهولة", "description": "الحجوزات والفوترة والتحليلات من لوحة واحدة." }
+    },
+    "testimonials": {
+      "eyebrow": "آراء العملاء",
+      "title": "ماذا يقول عملاؤنا",
+      "t1": { "quote": "Cowork.tn غيّر طريقة إدارتنا للفضاء. توفير كبير في وقت الفوترة!", "author": "سارة بن علي", "role": "مؤسسة Hub Tunis" },
+      "t2": { "quote": "واجهة سهلة وأعضاؤنا يحبون بوابة الحجز الذاتي.", "author": "كريم منصور", "role": "مدير Cowork Sfax" },
+      "t3": { "quote": "الدعم بالعربية والفرنسية يصنع فرقاً حقيقياً لعملائنا المحليين.", "author": "أميرة الطرابلسي", "role": "مديرة Space Sousse" }
+    },
+    "cta": {
+      "badge": "تجربة مجانية 14 يوماً",
+      "title": "مستعد لرقمنة فضائك؟",
+      "description": "انضم لعشرات فضاءات العمل المشترك في تونس التي تثق بـ Cowork.tn لإدارة نشاطها.",
+      "primary": "ابدأ مجاناً",
+      "secondary": "عرض الأسعار"
+    }
+  }
+}

@@ -1,0 +1,497 @@
+{
+  "nav": {
+    "product": "Produit",
+    "pricing": "Tarifs",
+    "features": "Fonctionnalités",
+    "login": "Connexion",
+    "start": "Créer mon espace"
+  },
+  "hero": {
+    "tagline": "La plateforme des espaces de coworking tunisiens",
+    "title": "Gérez réservations, membres et factures depuis un cockpit unique",
+    "subtitle": "Cowork.tn remplace les feuilles Excel, WhatsApp et bricolages maison par une plateforme premium et locale.",
+    "ctaPrimary": "Essai gratuit 14 jours",
+    "ctaSecondary": "Consulter les plans",
+    "meta": "Lancement officiel 16 janvier 2026"
+  },
+  "pricing": {
+    "tag": "Tarifs transparents",
+    "title": "Trois abonnements pour chaque hub",
+    "subtitle": "Facturation mensuelle en TND, sans frais cachés. Passage Pro/Premium possible à chaud.",
+    "cta": "Choisir ce plan",
+    "popular": "Populaire",
+    "perMonth": "/mois"
+  },
+  "plans": {
+    "basic": {
+      "title": "Basic",
+      "description": "Idéal pour lancer un espace indépendant.",
+      "perk1": "Réservations illimitées",
+      "perk2": "Facturation PDF automatique",
+      "perk3": "Support email J+1"
+    },
+    "pro": {
+      "title": "Pro",
+      "description": "Pour les hubs multi-salles qui veulent tout centraliser.",
+      "perk1": "Automations Stripe",
+      "perk2": "Analytics occupation",
+      "perk3": "Intégration WhatsApp"
+    },
+    "premium": {
+      "title": "Premium",
+      "description": "Suites multi-sites avec support dédié 7/7.",
+      "perk1": "Plan 3D interactif",
+      "perk2": "Onboarding sur mesure",
+      "perk3": "SLA prioritaire"
+    }
+  },
+  "footer": {
+    "legal": "Mentions légales",
+    "privacy": "Vie privée",
+    "support": "Support",
+    "note": "Projet MVP conçu pour les espaces de coworking en Tunisie. Les intégrations Supabase, Stripe et QR seront branchées lors du prochain sprint."
+  },
+  "loginPage": {
+    "demoHint": "Comptes de démonstration :"
+  },
+  "stats": {
+    "occupancy": {
+      "label": "Taux d'occupation",
+      "meta": "Rolling 30 jours"
+    },
+    "members": {
+      "label": "Membres actifs",
+      "meta": "+34 ce mois"
+    },
+    "revenue": {
+      "label": "MRR projeté",
+      "meta": "Plans Pro + Premium"
+    },
+    "bookings": {
+      "label": "Réservations à venir",
+      "meta": "7 prochains jours"
+    }
+  },
+  "canvas": {
+    "hint": "Zone interactive pour déposer les postes et salles.",
+    "todo": "TODO: brancher drag & drop et synchronisation temps réel."
+  },
+  "dashboardNav": {
+    "dashboard": "Vue générale",
+    "members": "Membres",
+    "bookings": "Réservations",
+    "billing": "Facturation"
+  },
+  "dashboard": {
+    "title": "Cockpit espace",
+    "subtitle": "Suivez l'occupation, les paiements et les incidents en temps réel.",
+    "plan": "Plan interactif",
+    "activity": "Activité récente",
+    "activityDescription": "Webhook Stripe + événements Supabase",
+    "activityEmpty": "Aucune activité récente, tout est calme.",
+    "spaceMeta": "Espace {space} • {city}",
+    "membersTotalLabel": "membres au total"
+  },
+  "membersPage": {
+    "title": "Gestion des membres",
+    "subtitle": "Check-in QR, abonnements et statuts synchronisés avec Supabase.",
+    "searchPlaceholder": "Rechercher des membres…",
+    "addMember": "Ajouter un membre",
+    "columns": {
+      "member": "Membre",
+      "email": "Email",
+      "plan": "Plan",
+      "status": "Statut",
+      "actions": "Actions"
+    },
+    "statusLabels": {
+      "active": "Actif",
+      "inactive": "Inactif",
+      "suspended": "Suspendu"
+    },
+    "plans": {
+      "unlimited": "Premium",
+      "10_days": "Pack 10 jours",
+      "day_pass": "Day pass",
+      "none": "Sans plan"
+    },
+    "actions": {
+      "viewProfile": "Voir profil"
+    },
+    "empty": "Aucun membre pour le moment.",
+    "error": "Impossible de charger les membres.",
+    "retryHint": "Vérifiez Supabase ou réessayez plus tard."
+  },
+  "bookingsPage": {
+    "title": "Réservations",
+    "subtitle": "Glisser-déposer pour postes et salles. Stripe bloque les no-show.",
+    "empty": "Aucune réservation à venir.",
+    "newBooking": "Nouvelle réservation",
+    "miniCalendar": "Mini-calendrier",
+    "resources": {
+      "title": "Mes ressources",
+      "available": "Libre",
+      "busy": "Occupé",
+      "empty": "Aucune ressource créée."
+    },
+    "upcoming": "Prochaines réservations",
+    "unknownResource": "Ressource",
+    "unknownMember": "Membre",
+    "calendarTitle": "Planification hebdomadaire",
+    "weekNumber": "Semaine {week}",
+    "viewModes": {
+      "day": "Jour",
+      "week": "Semaine"
+    },
+    "statusLabels": {
+      "pending": "En attente",
+      "confirmed": "Confirmée",
+      "cancelled": "Annulée",
+      "checked_in": "Présent"
+    },
+    "error": "Impossible de charger les réservations."
+  },
+  "billingPage": {
+    "title": "Facturation & abonnements",
+    "subtitle": "Synchronisé avec Stripe Billing et génération PDF automatique.",
+    "columns": {
+      "invoice": "Facture",
+      "member": "Membre",
+      "amount": "Montant",
+      "status": "Statut"
+    },
+    "tabs": {
+      "invoices": "Factures",
+      "analytics": "Statistiques"
+    },
+    "tableEmpty": "Aucune facture disponible pour le moment.",
+    "statusLabels": {
+      "draft": "Brouillon",
+      "sent": "Envoyée",
+      "paid": "Payée",
+      "overdue": "En retard"
+    },
+    "overview": {
+      "collected": {
+        "label": "Encaissements payés",
+        "helper": "Montant réglé ce trimestre"
+      },
+      "outstanding": {
+        "label": "En attente",
+        "helper": "Factures envoyées non payées"
+      },
+      "overdue": {
+        "label": "Factures en retard",
+        "helper": "Plus de 5 jours après échéance"
+      },
+      "collectionRate": {
+        "label": "Taux d'encaissement",
+        "helper": "Total encaissé / facturé"
+      }
+    },
+    "chart": {
+      "title": "Flux mensuel",
+      "subtitle": "Comparaison payé vs en attente (6 mois)",
+      "legendPaid": "Payé",
+      "legendPending": "En attente",
+      "empty": "Pas assez de données pour afficher le graphique."
+    },
+    "statusBreakdown": {
+      "title": "Par statut",
+      "subtitle": "Montant et volume par statut Supabase",
+      "count": "{count} facture(s)"
+    }
+  },
+  "auth": {
+    "loginTitle": "Connexion Admin",
+    "loginSubtitle": "Accédez à votre cockpit multi-tenant via Supabase.",
+    "registerTitle": "Créer mon espace",
+    "registerSubtitle": "Onboarding express en 3 étapes (espace, plan, offres)."
+  },
+  "registerPage": {
+    "eyebrow": "ONBOARDING",
+    "title": "Créer votre espace / تسجيل فضائكم",
+    "subtitle": "5 étapes rapides : infos personnelles, détails de l’espace, plan, paiement, confirmation.",
+    "steps": {
+      "personal": {
+        "title": "Infos personnelles",
+        "subtitle": "Identité + accès"
+      },
+      "space": {
+        "title": "Détails de l’espace",
+        "subtitle": "Ville, capacité"
+      },
+      "plan": {
+        "title": "Sélection du plan",
+        "subtitle": "Basic, Pro, Premium"
+      },
+      "payment": {
+        "title": "Paiement",
+        "subtitle": "Facturation Stripe"
+      },
+      "confirmation": {
+        "title": "Confirmation",
+        "subtitle": "Activation compte"
+      }
+    },
+    "currentStep": {
+      "title": "Informations personnelles / المعلومات الشخصية",
+      "subtitle": "Veuillez saisir vos coordonnées pour commencer. يرجى إدخال بياناتك للبدء."
+    },
+    "fields": {
+      "fullName": "Nom complet / الاسم الكامل",
+      "email": "Email / البريد الإلكتروني",
+      "password": "Mot de passe / كلمة السر",
+      "phone": "Téléphone / الهاتف",
+      "spaceName": "Nom de l’espace / اسم الفضاء",
+      "city": "Ville / المدينة",
+      "capacity": "Nombre de postes / عدد المكاتب",
+      "pitch": "Pitch marketing / وصف مختصر"
+    },
+    "placeholders": {
+      "fullName": "Votre nom complet",
+      "email": "vous@example.com",
+      "phone": "+216 XX XXX XXX",
+      "spaceName": "Ex: Hive Tunis",
+      "city": "Tunis, Sousse…",
+      "capacity": "40",
+      "pitch": "Services, positionnement, avantages membres"
+    },
+    "cta": "Continuer vers le plan"
+  },
+  "superAdmin": {
+    "title": "Super Admin",
+    "subtitle": "Visualisez tous les espaces, statuses et métriques clés.",
+    "todo": "TODO: brancher rôle fondateur + RLS Supabase."
+  },
+  "mySpace": {
+    "title": "Espace membre",
+    "subtitle": "Consultez vos crédits, réservations et factures personnelles.",
+    "cta": "Mettre à jour mon abonnement"
+  },
+  "profileMenu": {
+    "placeholder": "Utilisateur",
+    "signedInAs": "Connecté en tant que",
+    "profile": "Profil & paramètres",
+    "billing": "Portail facturation",
+    "logout": "Déconnexion"
+  },
+  "coworkerNav": {
+    "memberBadge": "Membre",
+    "overview": "Accueil",
+    "reservations": "Réservations",
+    "invoices": "Factures",
+    "profile": "Profil"
+  },
+  "coworkerDashboard": {
+    "welcomeTitle": "Bienvenue sur votre espace",
+    "welcomeSubtitle": "Consultez vos réservations, crédits et factures.",
+    "stats": {
+      "plan": "Plan actif",
+      "credits": "Crédits restants",
+      "days": "jours",
+      "nextBooking": "Prochaine réservation",
+      "noBooking": "Aucune réservation",
+      "pendingPayment": "Paiement en attente",
+      "dueBy": "Échéance :",
+      "allPaid": "Tout est réglé !"
+    },
+    "quickActions": {
+      "title": "Actions rapides",
+      "newBooking": "Réserver un poste",
+      "payInvoice": "Payer une facture",
+      "updateProfile": "Modifier mon profil"
+    },
+    "activity": {
+      "title": "Activité récente",
+      "subtitle": "Vos dernières actions dans l'espace",
+      "types": {
+        "checkin": "Check-in effectué",
+        "booking": "Réservation créée",
+        "payment": "Paiement effectué"
+      },
+      "labels": {
+        "checkin": "Présent",
+        "booking": "Réservé",
+        "payment": "Payé"
+      }
+    },
+    "spaceInfo": {
+      "label": "Votre espace de coworking",
+      "contact": "Contacter l'admin"
+    }
+  },
+  "coworkerReservations": {
+    "title": "Mes réservations",
+    "subtitle": "Gérez vos réservations de postes et salles.",
+    "newBooking": "Nouvelle réservation",
+    "quickBook": {
+      "title": "Réservation rapide",
+      "subtitle": "Sélectionnez une ressource pour réserver maintenant.",
+      "available": "Disponible",
+      "busy": "Occupé"
+    },
+    "upcoming": {
+      "title": "Réservations à venir",
+      "subtitle": "Vos prochaines sessions de coworking.",
+      "empty": "Aucune réservation à venir."
+    },
+    "past": {
+      "title": "Historique",
+      "subtitle": "Vos réservations passées.",
+      "empty": "Aucun historique."
+    },
+    "status": {
+      "pending": "En attente",
+      "confirmed": "Confirmée",
+      "checked_in": "Terminée",
+      "cancelled": "Annulée"
+    },
+    "actions": {
+      "details": "Détails"
+    }
+  },
+  "coworkerInvoices": {
+    "title": "Mes factures",
+    "subtitle": "Consultez et payez vos factures.",
+    "summary": {
+      "pending": "Montant en attente",
+      "invoices": "facture(s)",
+      "allPaid": "Tout est réglé !"
+    },
+    "subscription": {
+      "current": "Abonnement actif",
+      "nextBilling": "Prochaine facturation"
+    },
+    "list": {
+      "title": "Historique des factures",
+      "subtitle": "Toutes vos factures avec téléchargement PDF."
+    },
+    "columns": {
+      "invoice": "Facture",
+      "description": "Description",
+      "date": "Date",
+      "amount": "Montant",
+      "status": "Statut",
+      "actions": "Actions"
+    },
+    "status": {
+      "draft": "Brouillon",
+      "sent": "Envoyée",
+      "paid": "Payée",
+      "overdue": "En retard"
+    },
+    "actions": {
+      "pay": "Payer",
+      "payNow": "Payer maintenant"
+    },
+    "paymentMethod": {
+      "title": "Mode de paiement",
+      "subtitle": "Gérez votre carte bancaire liée.",
+      "expires": "Expire",
+      "manage": "Gérer via Stripe"
+    }
+  },
+  "coworkerProfile": {
+    "title": "Mon profil",
+    "subtitle": "Gérez vos informations personnelles et préférences.",
+    "memberSince": "Membre depuis",
+    "accountStatus": "Statut du compte",
+    "statusLabels": {
+      "active": "Actif",
+      "inactive": "Inactif"
+    },
+    "personalInfo": {
+      "title": "Informations personnelles",
+      "subtitle": "Vos coordonnées et données de contact."
+    },
+    "fields": {
+      "fullName": "Nom complet",
+      "email": "Adresse email",
+      "phone": "Téléphone",
+      "space": "Espace affilié"
+    },
+    "subscription": {
+      "title": "Abonnement",
+      "subtitle": "Détails de votre plan actuel.",
+      "renewsAt": "Renouvellement le"
+    },
+    "preferences": {
+      "title": "Préférences",
+      "subtitle": "Personnalisez votre expérience.",
+      "notifications": "Notifications",
+      "notificationsDesc": "Recevoir les emails de réservation et factures.",
+      "darkMode": "Mode sombre",
+      "darkModeDesc": "Basculer vers le thème sombre.",
+      "language": "Langue",
+      "languageDesc": "Choisir la langue de l'interface."
+    },
+    "actions": {
+      "edit": "Modifier",
+      "changePlan": "Changer de plan",
+      "renewNow": "Renouveler"
+    },
+    "danger": {
+      "title": "Zone danger",
+      "subtitle": "Actions irréversibles sur votre compte.",
+      "deleteAccount": "Supprimer mon compte"
+    }
+  },
+  "homepage": {
+    "stats": {
+      "spaces": "Espaces gérés",
+      "members": "Membres actifs",
+      "satisfaction": "Satisfaction client",
+      "support": "Support disponible"
+    },
+    "features": {
+      "eyebrow": "Fonctionnalités principales",
+      "title": "Pensé pour vos équipes",
+      "description": "Mise en page borde-à-borde, blocs respirants et interactions cohérentes pour un premier coup d'œil convaincant.",
+      "operations": {
+        "tag": "Opérations",
+        "title": "Multi-tenant prêt pour Supabase",
+        "description": "Auth RLS, onboarding express, création d'espaces illimités et gouvernance fondateur / admin / staff."
+      },
+      "billing": {
+        "tag": "Facturation",
+        "title": "Stripe natif",
+        "description": "Plans Basic / Pro / Premium, paiements récurrents en TND et factures PDF envoyées automatiquement."
+      },
+      "experience": {
+        "tag": "Expérience",
+        "title": "Portail membre premium",
+        "description": "Réservations self-service, suivi des crédits, QR codes dynamiques et notifications multilingues."
+      }
+    },
+    "additional": {
+      "eyebrow": "Et bien plus encore",
+      "title": "Tout ce dont vous avez besoin",
+      "performance": { "title": "Performance optimale", "description": "Next.js 15 avec SSR et optimisation automatique" },
+      "multilingual": { "title": "Multilingue", "description": "Français et Arabe avec RTL natif" },
+      "analytics": { "title": "Analytics temps réel", "description": "Tableaux de bord et KPIs en direct" },
+      "qrcode": { "title": "QR Codes dynamiques", "description": "Check-in/out automatisé pour les membres" }
+    },
+    "howItWorks": {
+      "eyebrow": "Comment ça marche",
+      "title": "Lancez-vous en 3 étapes",
+      "step1": { "title": "Créez votre espace", "description": "Inscrivez-vous et configurez votre premier espace de coworking en quelques minutes." },
+      "step2": { "title": "Invitez vos membres", "description": "Ajoutez vos coworkers et définissez leurs abonnements et accès." },
+      "step3": { "title": "Gérez tout facilement", "description": "Réservations, facturation et analytics depuis un tableau de bord unifié." }
+    },
+    "testimonials": {
+      "eyebrow": "Témoignages",
+      "title": "Ce que disent nos clients",
+      "t1": { "quote": "Cowork.tn a transformé la gestion de notre espace. Gain de temps énorme sur la facturation !", "author": "Sarah Ben Ali", "role": "Fondatrice, Hub Tunis" },
+      "t2": { "quote": "L'interface est intuitive et nos membres adorent le portail de réservation self-service.", "author": "Karim Mansour", "role": "Gérant, Cowork Sfax" },
+      "t3": { "quote": "Le support en arabe et français fait vraiment la différence pour notre clientèle locale.", "author": "Amira Trabelsi", "role": "Manager, Space Sousse" }
+    },
+    "cta": {
+      "badge": "Essai gratuit 14 jours",
+      "title": "Prêt à digitaliser votre espace ?",
+      "description": "Rejoignez les dizaines d'espaces de coworking en Tunisie qui font confiance à Cowork.tn pour gérer leur activité.",
+      "primary": "Commencer gratuitement",
+      "secondary": "Voir les tarifs"
+    }
+  }
+}

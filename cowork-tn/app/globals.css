@@ -1,0 +1,163 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Light mode - Clean, modern, airy */
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  --primary: #2563eb;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+  --muted: #f1f5f9;
+  --muted-foreground: #475569;
+  --accent: #10b981;
+  --accent-foreground: #ffffff;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #2563eb;
+  --radius: 0.75rem;
+  --surface: #f8fafc;
+  
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  --gradient-accent: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  --gradient-surface: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+}
+
+.dark {
+  /* Dark mode - Rich, sophisticated, high contrast */
+  --background: #0a0f1a;
+  --foreground: #f8fafc;
+  --card: #111827;
+  --card-foreground: #f8fafc;
+  --popover: #1e293b;
+  --popover-foreground: #f8fafc;
+  --primary: #60a5fa;
+  --primary-foreground: #0a0f1a;
+  --secondary: #1e293b;
+  --secondary-foreground: #f1f5f9;
+  --muted: #1e293b;
+  --muted-foreground: #cbd5e1;
+  --accent: #4ade80;
+  --accent-foreground: #022c22;
+  --destructive: #f87171;
+  --destructive-foreground: #1f2937;
+  --border: #334155;
+  --input: #334155;
+  --ring: #60a5fa;
+  --surface: #0f172a;
+  
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  --gradient-accent: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+  --gradient-surface: linear-gradient(180deg, #111827 0%, #0a0f1a 100%);
+}
+
+:root,
+html,
+body {
+  height: 100%;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply min-h-screen bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  
+  /* Smooth theme transitions */
+  body, .transition-colors {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  }
+}
+
+@layer components {
+  /* Glass morphism effect */
+  .glass {
+    @apply bg-card/80 backdrop-blur-xl border border-border/50;
+  }
+  
+  .glass-strong {
+    @apply bg-card/90 backdrop-blur-2xl border border-border/60;
+  }
+  
+  /* Glow effects for dark mode */
+  .dark .glow-primary {
+    box-shadow: 0 0 40px -10px rgba(59, 130, 246, 0.4);
+  }
+  
+  .dark .glow-accent {
+    box-shadow: 0 0 40px -10px rgba(52, 211, 153, 0.4);
+  }
+  
+  /* Card hover effects */
+  .card-hover {
+    @apply transition-all duration-300;
+  }
+  
+  .card-hover:hover {
+    @apply shadow-lg -translate-y-0.5;
+  }
+  
+  .dark .card-hover:hover {
+    box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+  }
+  
+  /* Gradient text */
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+    background-image: var(--gradient-primary);
+  }
+  
+  /* Better scrollbar */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-muted/30 rounded-full;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-muted-foreground/20 rounded-full;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/40;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .rtl\:text-right:where([dir="rtl"] *) {
+    text-align: right;
+  }
+  
+  /* Animated gradient background */
+  .animated-gradient {
+    background-size: 200% 200%;
+    animation: gradient-shift 8s ease infinite;
+  }
+  
+  @keyframes gradient-shift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+}
