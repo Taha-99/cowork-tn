@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { UserPlus } from "lucide-react";
 
-export function AddMemberDialog({ spaceId, onMemberAdded, t }) {
+export function AddMemberDialog({ spaceId, onMemberAdded, labels = {} }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -58,21 +58,37 @@ export function AddMemberDialog({ spaceId, onMemberAdded, t }) {
     }
   };
 
+  // Default labels for when not provided
+  const defaultLabels = {
+    addMember: "Add Member",
+    fullName: "Full Name",
+    email: "Email",
+    phone: "Phone (Optional)",
+    role: "Role",
+    member: "Member",
+    admin: "Admin",
+    cancel: "Cancel",
+    add: "Add",
+    adding: "Adding...",
+  };
+
+  const l = { ...defaultLabels, ...labels };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button className="rounded-2xl px-4">
           <UserPlus className="mr-2 h-4 w-4" />
-          {t("addMember")}
+          {l.addMember}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{t("addMember")}</DialogTitle>
+          <DialogTitle>{l.addMember}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="full_name">{t("form.fullName") || "Full Name"}</Label>
+            <Label htmlFor="full_name">{l.fullName}</Label>
             <Input
               id="full_name"
               name="full_name"
@@ -83,7 +99,7 @@ export function AddMemberDialog({ spaceId, onMemberAdded, t }) {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="email">{t("form.email") || "Email"}</Label>
+            <Label htmlFor="email">{l.email}</Label>
             <Input
               id="email"
               name="email"
@@ -95,7 +111,7 @@ export function AddMemberDialog({ spaceId, onMemberAdded, t }) {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="phone">{t("form.phone") || "Phone (Optional)"}</Label>
+            <Label htmlFor="phone">{l.phone}</Label>
             <Input
               id="phone"
               name="phone"
@@ -105,7 +121,7 @@ export function AddMemberDialog({ spaceId, onMemberAdded, t }) {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="role">{t("form.role") || "Role"}</Label>
+            <Label htmlFor="role">{l.role}</Label>
             <select
               id="role"
               name="role"
@@ -113,8 +129,8 @@ export function AddMemberDialog({ spaceId, onMemberAdded, t }) {
               onChange={handleInputChange}
               className="h-10 w-full rounded-md border border-border/60 bg-background px-3 py-2 text-sm text-foreground"
             >
-              <option value="member">{t("roles.member") || "Member"}</option>
-              <option value="admin">{t("roles.admin") || "Admin"}</option>
+              <option value="member">{l.member}</option>
+              <option value="admin">{l.admin}</option>
             </select>
           </div>
           {error && (
@@ -129,10 +145,10 @@ export function AddMemberDialog({ spaceId, onMemberAdded, t }) {
               onClick={() => setOpen(false)}
               disabled={loading}
             >
-              {t("form.cancel") || "Cancel"}
+              {l.cancel}
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? t("form.adding") || "Adding..." : t("form.add") || "Add Member"}
+              {loading ? l.adding : l.add}
             </Button>
           </div>
         </form>

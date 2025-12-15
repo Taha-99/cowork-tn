@@ -99,7 +99,21 @@ export default async function MembersPage({ params }) {
                 disabled
               />
             </div>
-            <AddMemberDialog spaceId={space.id} t={t} />
+            <AddMemberDialog 
+              spaceId={space.id} 
+              labels={{
+                addMember: t("addMember"),
+                fullName: t("form.fullName"),
+                email: t("form.email"),
+                phone: t("form.phone"),
+                role: t("form.role"),
+                member: t("roles.member"),
+                admin: t("roles.admin"),
+                cancel: t("form.cancel"),
+                add: t("form.add"),
+                adding: t("form.adding"),
+              }}
+            />
           </div>
           <div className="mt-6 overflow-hidden rounded-3xl border border-border/60 bg-background">
             <div className="grid grid-cols-[minmax(220px,2fr)_2fr_1fr_1fr_auto] gap-4 border-b border-border/60 px-6 py-4 text-xs font-semibold uppercase tracking-widest text-muted">
