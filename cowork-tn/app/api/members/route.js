@@ -16,31 +16,33 @@ export async function POST(request) {
       );
     }
 
-    // Check if user with email already exists in this space
-    const { data: existingProfile } = await supabase
-      .from("profiles")
+    // Check if member with email already exists in this space
+    const { data: existingMember } = await supabase
+      .from("members")
       .select("id")
       .eq("email", email)
       .eq("space_id", space_id)
       .single();
 
-    if (existingProfile) {
+    if (existingMember) {
       return NextResponse.json(
-        { error: "User already exists in this space" },
+        { error: "Member already exists in this space" },
         { status: 409 }
       );
     }
 
-    // Create new profile
+    // Create new member (note: we use the members table, not profiles)
+    // Members table has all the fields we need and doesn't require auth.users
     const { data, error } = await supabase
-      .from("profiles")
+      .from("members")
       .insert([
         {
           email,
           full_name,
           phone: phone || null,
-          role: role || "member",
           space_id,
+          plan: role === "admin" ? "unlimited" : "day_pass",
+          status: "active",
           created_at: new Date().toISOString(),
         },
       ])
@@ -48,7 +50,7 @@ export async function POST(request) {
       .single();
 
     if (error) {
-      console.error("Error creating profile:", error);
+      console.error("Error creating member:", error);
       return NextResponse.json(
         { error: error.message },
         { status: 500 }
@@ -78,12 +80,11 @@ export async function GET(request) {
       );
     }
 
-    // Get all members for the space
+    // Get all members for the space (from members table)
     const { data, error } = await supabase
-      .from("profiles")
-      .select("id, full_name, email, role, phone, avatar_url, created_at, last_sign_in_at")
+      .from("members")
+      .select("id, full_name, email, plan, status, phone, created_at")
       .eq("space_id", spaceId)
-      .neq("role", "super_admin")
       .order("full_name", { ascending: true });
 
     if (error) {
