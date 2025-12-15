@@ -2,14 +2,32 @@
 
 import * as React from "react";
 import { DayPicker } from "react-day-picker";
+import { fr, ar } from 'date-fns/locale';
 import { cn } from "@/lib/utils";
 import "react-day-picker/dist/style.css";
 
-function Calendar({ className, classNames, showOutsideDays = true, ...props }) {
+function Calendar({ className, classNames, showOutsideDays = true, locale: localeProp, plain = false, ...props }) {
+  // Map locale string to date-fns locale object when needed
+  let localeObj = undefined;
+  if (localeProp) {
+    if (typeof localeProp === 'string') {
+      if (localeProp.startsWith('fr')) localeObj = fr;
+      else if (localeProp.startsWith('ar')) localeObj = ar;
+      else localeObj = undefined;
+    } else {
+      localeObj = localeProp;
+    }
+  }
+
+  const baseClass = plain
+    ? cn("w-full", className)
+    : cn("rounded-3xl border border-border bg-card p-4", className);
+
   return (
     <DayPicker
+      locale={localeObj}
       showOutsideDays={showOutsideDays}
-      className={cn("rounded-3xl border border-border bg-card p-4", className)}
+      className={baseClass}
       classNames={{
         months: "flex flex-col space-y-4",
         month: "space-y-4",

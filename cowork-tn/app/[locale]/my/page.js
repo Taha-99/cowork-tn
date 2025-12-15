@@ -4,32 +4,157 @@ import { Badge } from "@/components/ui/badge";
 import { getTranslations } from "next-intl/server";
 import { CalendarDays, CreditCard, Clock, Zap, ArrowRight, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 
 export default async function MySpacePage({ params }) {
   const { locale } = await params;
   const t = await getTranslations("coworkerDashboard");
 
-  // Mock data (will be replaced with Supabase queries)
-  const memberData = {
+  // Create Supabase client for server component
+  const cookieStore = await cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    {
+      cookies: {
+        get(name) {
+          return cookieStore.get(name)?.value;
+        },
+      },
+    }
+  );
+
+  // Get current user
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  let memberData = {
     plan: "Pack 10 jours",
     creditsRemaining: 6,
     creditsTotal: 10,
-    nextReservation: {
-      date: "2025-01-20",
-      time: "09:00 - 12:00",
-      resource: "Poste A3",
-    },
-    pendingInvoice: {
-      id: "INV-2025-018",
-      amount: 180,
-      dueDate: "2025-01-25",
-    },
-    recentActivity: [
-      { type: "checkin", date: "2025-01-15", resource: "Poste A3" },
-      { type: "booking", date: "2025-01-14", resource: "Salle Alpha" },
-      { type: "payment", date: "2025-01-10", amount: 180 },
-    ],
+    nextReservation: null,
+    pendingInvoice: null,
+    recentActivity: [],
   };
+
+  if (user) {
+    try {
+      // Fetch user profile with space info
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select(`
+          *,
+          spaces!space_id (
+            name,
+            plan
+          )
+        `)
+        .eq("id", user.id)
+        .single();
+
+      if (profile) {
+        // Fetch upcoming bookings
+        const today = new Date().toISOString().split('T')[0];
+        const { data: upcomingBookings } = await supabase
+          .from("bookings")
+          .select("*")
+          .eq("user_id", user.id)
+          .gte("start_time", `${today}T00:00:00`)
+          .order("start_time", { ascending: true })
+          .limit(1);
+
+        // Fetch pending invoices
+        const { data: pendingInvoices } = await supabase
+          .from("invoices")
+          .select("*")
+          .eq("user_id", user.id)
+          .eq("status", "pending")
+          .order("due_date", { ascending: true })
+          .limit(1);
+
+        // Fetch recent activity
+        const { data: recentActivity } = await supabase
+          .from("activity_log")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(5);
+
+        // Calculate credits (simplified)
+        const planCredits = {
+          'starter': 10,
+          'pro': 20,
+          'enterprise': 40,
+          'flex': 15,
+          'pack 10 jours': 10
+        };
+        
+        const creditsTotal = planCredits[profile.spaces?.plan?.toLowerCase()] || 10;
+        
+        // Count used credits (bookings in current month)
+        const currentMonth = new Date().getMonth() + 1;
+        const currentYear = new Date().getFullYear();
+        const { count: usedCredits } = await supabase
+          .from("bookings")
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", user.id)
+          .gte("start_time", `${currentYear}-${currentMonth.toString().padStart(2, '0')}-01`)
+          .lte("start_time", `${currentYear}-${currentMonth.toString().padStart(2, '0')}-31`);
+        
+        const creditsRemaining = Math.max(0, creditsTotal - (usedCredits || 0));
+
+        // Format next reservation
+        const nextReservation = upcomingBookings && upcomingBookings.length > 0 ? {
+          date: new Date(upcomingBookings[0].start_time).toISOString().split('T')[0],
+          time: `${new Date(upcomingBookings[0].start_time).toLocaleTimeString('fr-FR', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+          })} - ${new Date(upcomingBookings[0].end_time).toLocaleTimeString('fr-FR', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+          })}`,
+          resource: upcomingBookings[0].resource_name || "Ressource"
+        } : null;
+
+        // Format pending invoice
+        const pendingInvoice = pendingInvoices && pendingInvoices.length > 0 ? {
+          id: pendingInvoices[0].invoice_number || `INV-${pendingInvoices[0].id}`,
+          amount: pendingInvoices[0].amount_tnd || 0,
+          dueDate: pendingInvoices[0].due_date?.split('T')[0] || "Date inconnue"
+        } : null;
+
+        // Format recent activity
+        const formattedRecentActivity = recentActivity?.map(activity => {
+          const base = {
+            date: activity.created_at?.split('T')[0] || "Date inconnue"
+          };
+          
+          switch (activity.action_type) {
+            case 'booking_created':
+              return { ...base, type: "booking", resource: activity.entity_type || "Ressource" };
+            case 'checkin':
+              return { ...base, type: "checkin", resource: activity.entity_type || "Poste" };
+            case 'payment':
+              return { ...base, type: "payment", amount: activity.metadata?.amount || 0 };
+            default:
+              return { ...base, type: "info", resource: activity.action_description || "Activité" };
+          }
+        }) || [];
+
+        memberData = {
+          plan: profile.spaces?.plan || "Pack 10 jours",
+          creditsRemaining,
+          creditsTotal,
+          nextReservation,
+          pendingInvoice,
+          recentActivity: formattedRecentActivity,
+        };
+      }
+    } catch (err) {
+      console.error("Error loading member data:", err);
+      // Keep default mock data on error
+    }
+  }
 
   const usagePercent = (memberData.creditsRemaining / memberData.creditsTotal) * 100;
 

@@ -74,7 +74,7 @@ export function DashboardTopbar({ locale }) {
           <ThemeToggle />
           <div className="h-6 w-px bg-border/50 mx-1 hidden sm:block" />
           {loading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" aria-label="Loading profile" />}
-          <DropdownMenu>
+          <DropdownMenu suppressHydrationWarning>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"

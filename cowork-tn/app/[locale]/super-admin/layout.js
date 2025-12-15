@@ -128,7 +128,7 @@ export default function SuperAdminLayout({ children, params }) {
             
             <ThemeToggle />
             
-            <DropdownMenu>
+            <DropdownMenu suppressHydrationWarning>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="flex items-center gap-2 px-2">
                   <Avatar className="h-8 w-8">
@@ -210,7 +210,7 @@ export default function SuperAdminLayout({ children, params }) {
         )}
 
         {/* Main content */}
-        <main className="flex-1 p-6 lg:p-8">
+        <main className="flex-1 space-y-6">
           {children}
         </main>
       </div>

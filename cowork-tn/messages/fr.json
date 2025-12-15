@@ -118,6 +118,19 @@
     "actions": {
       "viewProfile": "Voir profil"
     },
+    "form": {
+      "fullName": "Nom complet",
+      "email": "Email",
+      "phone": "Téléphone (Optionnel)",
+      "role": "Rôle",
+      "cancel": "Annuler",
+      "add": "Ajouter",
+      "adding": "Ajout en cours..."
+    },
+    "roles": {
+      "member": "Membre",
+      "admin": "Administrateur"
+    },
     "empty": "Aucun membre pour le moment.",
     "error": "Impossible de charger les membres.",
     "retryHint": "Vérifiez Supabase ou réessayez plus tard."
@@ -139,6 +152,8 @@
     "unknownMember": "Membre",
     "calendarTitle": "Planification hebdomadaire",
     "weekNumber": "Semaine {week}",
+    "previous": "Précédent",
+    "next": "Suivant",
     "viewModes": {
       "day": "Jour",
       "week": "Semaine"

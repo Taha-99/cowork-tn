@@ -1,5 +1,5 @@
 -- =====================================================
--- COWORK.TN - COMPLETE DATABASE SETUP
+-- COWORK.TN - FIXED DATABASE SETUP (Matches code expectations)
 -- =====================================================
 -- 
 -- Instructions for developers:
@@ -18,7 +18,7 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- =====================================================
--- TABLES
+-- TABLES (Updated to match code expectations)
 -- =====================================================
 
 -- 1. SPACES (coworking spaces)
@@ -32,6 +32,9 @@ CREATE TABLE IF NOT EXISTS public.spaces (
   description TEXT,
   logo_url TEXT,
   plan TEXT DEFAULT 'basic' CHECK (plan IN ('basic', 'pro', 'premium')),
+  stripe_customer_id TEXT,
+  subscription_status TEXT,
+  trial_ends_at TIMESTAMPTZ,
   is_active BOOLEAN DEFAULT true,
   settings JSONB DEFAULT '{}',
   created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -41,12 +44,13 @@ CREATE TABLE IF NOT EXISTS public.spaces (
 -- 2. PROFILES (extends auth.users)
 CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  email TEXT NOT NULL,
+  email TEXT NOT NULL,x
   full_name TEXT,
   avatar_url TEXT,
   phone TEXT,
   role TEXT NOT NULL DEFAULT 'coworker' CHECK (role IN ('super_admin', 'admin', 'coworker')),
   space_id UUID REFERENCES public.spaces(id) ON DELETE SET NULL,
+  last_sign_in_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -87,30 +91,32 @@ CREATE TABLE IF NOT EXISTS public.members (
   UNIQUE(email, space_id)
 );
 
--- 5. BOOKINGS
+-- 5. BOOKINGS (Updated column names to match code: start_time/end_time instead of starts_at/ends_at)
 CREATE TABLE IF NOT EXISTS public.bookings (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   space_id UUID NOT NULL REFERENCES public.spaces(id) ON DELETE CASCADE,
   resource_id UUID NOT NULL REFERENCES public.resources(id) ON DELETE CASCADE,
   member_id UUID NOT NULL REFERENCES public.members(id) ON DELETE CASCADE,
-  starts_at TIMESTAMPTZ NOT NULL,
-  ends_at TIMESTAMPTZ NOT NULL,
+  user_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL, -- For backward compatibility with code
+  start_time TIMESTAMPTZ NOT NULL, -- Changed from starts_at to match code
+  end_time TIMESTAMPTZ NOT NULL, -- Changed from ends_at to match code
   status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'cancelled', 'checked_in', 'completed')),
   price_tnd DECIMAL(10,3),
   notes TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
-  CONSTRAINT valid_time_range CHECK (ends_at > starts_at)
+  CONSTRAINT valid_time_range CHECK (end_time > start_time)
 );
 
--- 6. INVOICES
+-- 6. INVOICES (Updated column name to match code: amount_tnd instead of amount)
 CREATE TABLE IF NOT EXISTS public.invoices (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   space_id UUID NOT NULL REFERENCES public.spaces(id) ON DELETE CASCADE,
   member_id UUID NOT NULL REFERENCES public.members(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL, -- For backward compatibility with code
   booking_id UUID REFERENCES public.bookings(id) ON DELETE SET NULL,
   invoice_number TEXT UNIQUE NOT NULL,
-  amount DECIMAL(10,3) NOT NULL,
+  amount_tnd DECIMAL(10,3) NOT NULL, -- Changed from amount to match code
   currency TEXT DEFAULT 'TND',
   status TEXT DEFAULT 'draft' CHECK (status IN ('draft', 'sent', 'paid', 'overdue', 'cancelled')),
   due_date DATE,
@@ -121,11 +127,12 @@ CREATE TABLE IF NOT EXISTS public.invoices (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 7. ACTIVITY LOG
+-- 7. ACTIVITY LOG (Added user_id for backward compatibility)
 CREATE TABLE IF NOT EXISTS public.activity_log (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   space_id UUID REFERENCES public.spaces(id) ON DELETE CASCADE,
   actor_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+  user_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL, -- For backward compatibility with code
   action TEXT NOT NULL,
   entity_type TEXT,
   entity_id UUID,
@@ -204,10 +211,6 @@ DROP POLICY IF EXISTS "profiles_update_own" ON public.profiles;
 DROP POLICY IF EXISTS "profiles_insert_own" ON public.profiles;
 DROP POLICY IF EXISTS "profiles_select_super_admin" ON public.profiles;
 DROP POLICY IF EXISTS "profiles_select_admin_space" ON public.profiles;
-DROP POLICY IF EXISTS "Users can view own profile" ON public.profiles;
-DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
-DROP POLICY IF EXISTS "Super admins can view all profiles" ON public.profiles;
-DROP POLICY IF EXISTS "Admins can view space profiles" ON public.profiles;
 
 -- Users can view their own profile
 CREATE POLICY "profiles_select_own" ON public.profiles
@@ -242,9 +245,6 @@ CREATE POLICY "profiles_select_admin_space" ON public.profiles
 DROP POLICY IF EXISTS "spaces_all_super_admin" ON public.spaces;
 DROP POLICY IF EXISTS "spaces_manage_admin" ON public.spaces;
 DROP POLICY IF EXISTS "spaces_view_user" ON public.spaces;
-DROP POLICY IF EXISTS "Super admins full access to spaces" ON public.spaces;
-DROP POLICY IF EXISTS "Admins can manage own space" ON public.spaces;
-DROP POLICY IF EXISTS "Coworkers can view their space" ON public.spaces;
 
 -- Super admins have full access to all spaces
 CREATE POLICY "spaces_all_super_admin" ON public.spaces
@@ -270,8 +270,6 @@ CREATE POLICY "spaces_view_user" ON public.spaces
 
 DROP POLICY IF EXISTS "members_manage_admin" ON public.members;
 DROP POLICY IF EXISTS "members_view_own" ON public.members;
-DROP POLICY IF EXISTS "Admins can manage space members" ON public.members;
-DROP POLICY IF EXISTS "Members can view own membership" ON public.members;
 
 -- Super admins and admins can manage members in their space (using helper functions)
 CREATE POLICY "members_manage_admin" ON public.members
@@ -293,8 +291,6 @@ CREATE POLICY "members_view_own" ON public.members
 
 DROP POLICY IF EXISTS "resources_view_user" ON public.resources;
 DROP POLICY IF EXISTS "resources_manage_admin" ON public.resources;
-DROP POLICY IF EXISTS "Space users can view resources" ON public.resources;
-DROP POLICY IF EXISTS "Admins can manage resources" ON public.resources;
 
 -- All users can view resources in their space (or all if super_admin)
 CREATE POLICY "resources_view_user" ON public.resources
@@ -320,24 +316,23 @@ CREATE POLICY "resources_manage_admin" ON public.resources
 DROP POLICY IF EXISTS "bookings_view_own" ON public.bookings;
 DROP POLICY IF EXISTS "bookings_create_own" ON public.bookings;
 DROP POLICY IF EXISTS "bookings_manage_admin" ON public.bookings;
-DROP POLICY IF EXISTS "Members can view own bookings" ON public.bookings;
-DROP POLICY IF EXISTS "Members can create bookings" ON public.bookings;
-DROP POLICY IF EXISTS "Admins can manage space bookings" ON public.bookings;
 
--- Members can view their own bookings
+-- Members can view their own bookings (using user_id for backward compatibility)
 CREATE POLICY "bookings_view_own" ON public.bookings
   FOR SELECT USING (
-    EXISTS (
+    user_id = auth.uid()
+    OR EXISTS (
       SELECT 1 FROM public.members
       WHERE id = bookings.member_id
       AND profile_id = auth.uid()
     )
   );
 
--- Members can create their own bookings
+-- Members can create their own bookings (using user_id for backward compatibility)
 CREATE POLICY "bookings_create_own" ON public.bookings
   FOR INSERT WITH CHECK (
-    EXISTS (
+    user_id = auth.uid()
+    OR EXISTS (
       SELECT 1 FROM public.members
       WHERE id = bookings.member_id
       AND profile_id = auth.uid()
@@ -360,13 +355,12 @@ CREATE POLICY "bookings_manage_admin" ON public.bookings
 
 DROP POLICY IF EXISTS "invoices_view_own" ON public.invoices;
 DROP POLICY IF EXISTS "invoices_manage_admin" ON public.invoices;
-DROP POLICY IF EXISTS "Members can view own invoices" ON public.invoices;
-DROP POLICY IF EXISTS "Admins can manage space invoices" ON public.invoices;
 
--- Members can view their own invoices
+-- Members can view their own invoices (using user_id for backward compatibility)
 CREATE POLICY "invoices_view_own" ON public.invoices
   FOR SELECT USING (
-    EXISTS (
+    user_id = auth.uid()
+    OR EXISTS (
       SELECT 1 FROM public.members
       WHERE id = invoices.member_id
       AND profile_id = auth.uid()
@@ -388,7 +382,6 @@ CREATE POLICY "invoices_manage_admin" ON public.invoices
 -- =====================================================
 
 DROP POLICY IF EXISTS "activity_log_view_admin" ON public.activity_log;
-DROP POLICY IF EXISTS "Admins can view space activity" ON public.activity_log;
 
 -- Admins and super admins can view activity logs in their space
 CREATE POLICY "activity_log_view_admin" ON public.activity_log
@@ -514,20 +507,23 @@ CREATE INDEX IF NOT EXISTS idx_members_profile_id ON public.members(profile_id);
 CREATE INDEX IF NOT EXISTS idx_resources_space_id ON public.resources(space_id);
 CREATE INDEX IF NOT EXISTS idx_bookings_space_id ON public.bookings(space_id);
 CREATE INDEX IF NOT EXISTS idx_bookings_member_id ON public.bookings(member_id);
-CREATE INDEX IF NOT EXISTS idx_bookings_starts_at ON public.bookings(starts_at);
+CREATE INDEX IF NOT EXISTS idx_bookings_user_id ON public.bookings(user_id);
+CREATE INDEX IF NOT EXISTS idx_bookings_start_time ON public.bookings(start_time);
 CREATE INDEX IF NOT EXISTS idx_invoices_space_id ON public.invoices(space_id);
 CREATE INDEX IF NOT EXISTS idx_invoices_member_id ON public.invoices(member_id);
+CREATE INDEX IF NOT EXISTS idx_invoices_user_id ON public.invoices(user_id);
 CREATE INDEX IF NOT EXISTS idx_activity_log_space_id ON public.activity_log(space_id);
+CREATE INDEX IF NOT EXISTS idx_activity_log_user_id ON public.activity_log(user_id);
 
 -- =====================================================
--- SEED DATA (Demo)
+-- SEED DATA (Updated to match code expectations)
 -- =====================================================
 
--- Insert demo spaces
-INSERT INTO public.spaces (id, name, slug, city, address, phone, plan, is_active) VALUES
-  ('11111111-1111-1111-1111-111111111111', 'Hive Coworking Tunis', 'hive-tunis', 'Tunis', 'Avenue Habib Bourguiba, Centre Ville', '+216 71 123 456', 'premium', true),
-  ('22222222-2222-2222-2222-222222222222', 'LaStation Sousse', 'lastation-sousse', 'Sousse', 'Rue du Port, Sousse Médina', '+216 73 234 567', 'pro', true),
-  ('33333333-3333-3333-3333-333333333333', 'WorkSpace Sfax', 'workspace-sfax', 'Sfax', 'Avenue 14 Janvier, Centre', '+216 74 345 678', 'basic', true)
+-- Insert demo spaces (updated to include cowork-tn-hq)
+INSERT INTO public.spaces (id, name, slug, city, address, phone, plan, logo_url, stripe_customer_id, subscription_status, trial_ends_at, is_active) VALUES
+  ('11111111-1111-1111-1111-111111111111', 'Cowork.tn HQ', 'cowork-tn-hq', 'Tunis', 'Avenue Habib Bourguiba', '+21671000111', 'pro', 'https://placehold.co/120x120', 'cus_123', 'active', now() + interval '14 days', true),
+  ('22222222-2222-2222-2222-222222222222', 'LaStation Sousse', 'lastation-sousse', 'Sousse', 'Rue du Port', '+21673222333', 'basic', 'https://placehold.co/120x120', 'cus_456', 'trialing', now() + interval '21 days', true),
+  ('33333333-3333-3333-3333-333333333333', 'WorkSpace Sfax', 'workspace-sfax', 'Sfax', 'Avenue 14 Janvier, Centre', '+216 74 345 678', 'basic', null, null, null, null, true)
 ON CONFLICT (slug) DO NOTHING;
 
 -- Insert demo resources
@@ -594,4 +590,4 @@ ON CONFLICT DO NOTHING;
 -- 
 -- Next: Run create_users.sql to create demo user accounts
 --
--- =====================================================
+-- =====================================================</search_replace_blocks

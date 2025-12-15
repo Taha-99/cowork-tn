@@ -54,102 +54,49 @@ export default function UsersManagementPage({ params }) {
 
   async function loadUsers() {
     try {
+      setIsLoading(true);
       const supabase = getSupabaseClient();
+      
+      // Fetch profiles with their space information
       const { data, error } = await supabase
         .from("profiles")
-        .select("*")
+        .select(`
+          *,
+          spaces:space_id (
+            name
+          )
+        `)
         .order("created_at", { ascending: false });
 
-      if (data) {
-        setUsers(data);
+      if (error) {
+        console.error("Error loading users:", error);
+        // Fallback to empty array if error
+        setUsers([]);
+      } else {
+        // Transform the data to match our UI format
+        const transformedUsers = data.map(user => ({
+          id: user.id,
+          full_name: user.full_name || "Non spécifié",
+          email: user.email || "Non spécifié",
+          role: user.role || "coworker",
+          phone: user.phone || "Non spécifié",
+          avatar_url: user.avatar_url,
+          created_at: user.created_at,
+          last_sign_in: user.last_sign_in_at || "Jamais",
+          space_name: user.spaces?.name || "Aucun espace"
+        }));
+        setUsers(transformedUsers);
       }
     } catch (err) {
       console.error("Error loading users:", err);
+      setUsers([]);
     } finally {
       setIsLoading(false);
     }
   }
 
-  // Mock data for demo
-  const mockUsers = users.length > 0 ? users : [
-    {
-      id: "1",
-      full_name: "Admin Principal",
-      email: "super@cowork.tn",
-      role: "super_admin",
-      phone: "+216 XX XXX XXX",
-      avatar_url: null,
-      created_at: "2023-06-01",
-      last_sign_in: "2024-03-15 10:30",
-      space_name: null,
-    },
-    {
-      id: "2",
-      full_name: "Karim Ben Ali",
-      email: "admin@cowork.tn",
-      role: "admin",
-      phone: "+216 55 123 456",
-      avatar_url: null,
-      created_at: "2024-01-15",
-      last_sign_in: "2024-03-14 15:22",
-      space_name: "Hive Tunis",
-    },
-    {
-      id: "3",
-      full_name: "Sami Trabelsi",
-      email: "user@cowork.tn",
-      role: "coworker",
-      phone: "+216 55 789 012",
-      avatar_url: null,
-      created_at: "2024-02-20",
-      last_sign_in: "2024-03-15 09:45",
-      space_name: "Hive Tunis",
-    },
-    {
-      id: "4",
-      full_name: "Amine Gharbi",
-      email: "amine@techhub.tn",
-      role: "admin",
-      phone: "+216 55 345 678",
-      avatar_url: null,
-      created_at: "2023-11-10",
-      last_sign_in: "2024-03-13 11:00",
-      space_name: "Tech Hub Sfax",
-    },
-    {
-      id: "5",
-      full_name: "Leila Mansour",
-      email: "leila@example.com",
-      role: "coworker",
-      phone: "+216 55 901 234",
-      avatar_url: null,
-      created_at: "2024-03-01",
-      last_sign_in: "2024-03-15 08:15",
-      space_name: "Tech Hub Sfax",
-    },
-    {
-      id: "6",
-      full_name: "Mohamed Riahi",
-      email: "mohamed@digitallab.tn",
-      role: "admin",
-      phone: "+216 55 567 890",
-      avatar_url: null,
-      created_at: "2024-01-28",
-      last_sign_in: "2024-03-12 16:30",
-      space_name: "Digital Lab Bizerte",
-    },
-    {
-      id: "7",
-      full_name: "Fatma Bouzid",
-      email: "fatma@example.com",
-      role: "coworker",
-      phone: "+216 55 234 567",
-      avatar_url: null,
-      created_at: "2023-09-05",
-      last_sign_in: "2024-03-10 14:00",
-      space_name: "LaStation Sousse",
-    },
-  ];
+  // Use real users data
+  const displayUsers = users;
 
   const getRoleBadge = (role) => {
     const config = {
@@ -166,7 +113,7 @@ export default function UsersManagementPage({ params }) {
     );
   };
 
-  const filteredUsers = mockUsers.filter(user => {
+  const filteredUsers = displayUsers.filter(user => {
     const matchesSearch = user.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.space_name?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -175,10 +122,10 @@ export default function UsersManagementPage({ params }) {
   });
 
   const stats = {
-    total: mockUsers.length,
-    super_admins: mockUsers.filter(u => u.role === "super_admin").length,
-    admins: mockUsers.filter(u => u.role === "admin").length,
-    coworkers: mockUsers.filter(u => u.role === "coworker").length,
+    total: displayUsers.length,
+    super_admins: displayUsers.filter(u => u.role === "super_admin").length,
+    admins: displayUsers.filter(u => u.role === "admin").length,
+    coworkers: displayUsers.filter(u => u.role === "coworker").length,
   };
 
   const getInitials = (name) => {

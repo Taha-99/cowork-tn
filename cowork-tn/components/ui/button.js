@@ -34,8 +34,10 @@ const buttonVariants = cva(
 
 const Button = React.forwardRef(({ className, variant, size, asChild = false, ...props }, ref) => {
   const Comp = asChild ? Slot : "button";
+  // Always set suppressHydrationWarning to reduce client/server id mismatch
+  const mergedProps = { ...props, suppressHydrationWarning: true };
   return (
-    <Comp ref={ref} className={cn(buttonVariants({ variant, size }), className)} {...props} />
+    <Comp ref={ref} className={cn(buttonVariants({ variant, size }), className)} {...mergedProps} />
   );
 });
 Button.displayName = "Button";

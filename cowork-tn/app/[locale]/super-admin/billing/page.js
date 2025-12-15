@@ -26,25 +26,147 @@ import {
   Calendar,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { getSupabaseClient } from "@/lib/supabase";
 
 export default function BillingPage({ params }) {
   const { locale } = React.use(params);
+  const [invoices, setInvoices] = React.useState([]);
+  const [stats, setStats] = React.useState({
+    monthlyRevenue: 0,
+    activeSubscriptions: 0,
+    pendingInvoices: 0,
+    collectionRate: 0
+  });
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [searchQuery, setSearchQuery] = React.useState("");
+  const [statusFilter, setStatusFilter] = React.useState("all");
 
-  const stats = [
-    { title: "Revenus ce mois", value: "45,230 TND", change: "+12.5%", trend: "up", icon: DollarSign, color: "bg-green-500" },
-    { title: "Abonnements actifs", value: "24", change: "+3", trend: "up", icon: CreditCard, color: "bg-blue-500" },
-    { title: "Factures en attente", value: "5", change: "-2", trend: "down", icon: Clock, color: "bg-amber-500" },
-    { title: "Taux de recouvrement", value: "94.2%", change: "+1.8%", trend: "up", icon: Receipt, color: "bg-purple-500" },
+  React.useEffect(() => {
+    loadBillingData();
+  }, []);
+
+  async function loadBillingData() {
+    try {
+      setIsLoading(true);
+      const supabase = getSupabaseClient();
+      
+      // Fetch invoices with space information
+      const { data: invoicesData, error: invoicesError } = await supabase
+        .from("invoices")
+        .select(`
+          *,
+          spaces!inner (
+            name
+          )
+        `)
+        .order("created_at", { ascending: false });
+
+      if (invoicesError) {
+        console.error("Error loading invoices:", invoicesError);
+        // Fallback to static data
+        setInvoices([
+          { id: "INV-2024-001", space: "Hive Tunis", amount: 890, status: "paid", date: "2024-03-15", plan: "Pro" },
+          { id: "INV-2024-002", space: "Tech Hub Sfax", amount: 1450, status: "paid", date: "2024-03-14", plan: "Enterprise" },
+          { id: "INV-2024-003", space: "LaStation Sousse", amount: 450, status: "pending", date: "2024-03-12", plan: "Starter" },
+          { id: "INV-2024-004", space: "Digital Lab Bizerte", amount: 890, status: "paid", date: "2024-03-10", plan: "Pro" },
+          { id: "INV-2024-005", space: "CoWork Hammamet", amount: 450, status: "overdue", date: "2024-03-01", plan: "Starter" },
+          { id: "INV-2024-006", space: "Startup Factory", amount: 890, status: "paid", date: "2024-02-28", plan: "Pro" },
+        ]);
+      } else {
+        // Transform the data
+        const transformedInvoices = invoicesData.map(invoice => ({
+          id: invoice.invoice_number || `INV-${invoice.id}`,
+          space: invoice.spaces?.name || "Espace inconnu",
+          amount: invoice.amount || 0,
+          status: invoice.status || "pending",
+          date: invoice.created_at?.split('T')[0] || "Date inconnue",
+          plan: invoice.plan || "Starter"
+        }));
+        setInvoices(transformedInvoices);
+      }
+
+      // Calculate stats
+      const currentMonth = new Date().getMonth() + 1;
+      const currentYear = new Date().getFullYear();
+      
+      const { data: spacesData } = await supabase
+        .from("spaces")
+        .select("status, plan, monthly_fee")
+        .eq("status", "active");
+
+      const { data: monthlyInvoices } = await supabase
+        .from("invoices")
+        .select("amount, status, created_at")
+        .gte("created_at", `${currentYear}-${currentMonth.toString().padStart(2, '0')}-01`)
+        .lte("created_at", `${currentYear}-${currentMonth.toString().padStart(2, '0')}-31`);
+
+      // Calculate statistics
+      const monthlyRevenue = monthlyInvoices?.reduce((sum, inv) => sum + (inv.amount || 0), 0) || 0;
+      const activeSubscriptions = spacesData?.length || 0;
+      const pendingInvoices = invoicesData?.filter(inv => inv.status === "pending").length || 0;
+      const paidInvoices = invoicesData?.filter(inv => inv.status === "paid").length || 0;
+      const totalInvoices = invoicesData?.length || 0;
+      const collectionRate = totalInvoices > 0 ? Math.round((paidInvoices / totalInvoices) * 100) : 0;
+
+      setStats({
+        monthlyRevenue,
+        activeSubscriptions,
+        pendingInvoices,
+        collectionRate
+      });
+
+    } catch (err) {
+      console.error("Error loading billing data:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  const statsData = [
+    { 
+      title: "Revenus ce mois", 
+      value: `${stats.monthlyRevenue.toLocaleString('fr-FR')} TND`, 
+      change: "+12.5%", 
+      trend: "up", 
+      icon: DollarSign, 
+      color: "bg-green-500" 
+    },
+    { 
+      title: "Abonnements actifs", 
+      value: stats.activeSubscriptions.toString(), 
+      change: "+3", 
+      trend: "up", 
+      icon: CreditCard, 
+      color: "bg-blue-500" 
+    },
+    { 
+      title: "Factures en attente", 
+      value: stats.pendingInvoices.toString(), 
+      change: "-2", 
+      trend: "down", 
+      icon: Clock, 
+      color: "bg-amber-500" 
+    },
+    { 
+      title: "Taux de recouvrement", 
+      value: `${stats.collectionRate}%`, 
+      change: "+1.8%", 
+      trend: "up", 
+      icon: Receipt, 
+      color: "bg-purple-500" 
+    },
   ];
 
-  const invoices = [
-    { id: "INV-2024-001", space: "Hive Tunis", amount: 890, status: "paid", date: "2024-03-15", plan: "Pro" },
-    { id: "INV-2024-002", space: "Tech Hub Sfax", amount: 1450, status: "paid", date: "2024-03-14", plan: "Enterprise" },
-    { id: "INV-2024-003", space: "LaStation Sousse", amount: 450, status: "pending", date: "2024-03-12", plan: "Starter" },
-    { id: "INV-2024-004", space: "Digital Lab Bizerte", amount: 890, status: "paid", date: "2024-03-10", plan: "Pro" },
-    { id: "INV-2024-005", space: "CoWork Hammamet", amount: 450, status: "overdue", date: "2024-03-01", plan: "Starter" },
-    { id: "INV-2024-006", space: "Startup Factory", amount: 890, status: "paid", date: "2024-02-28", plan: "Pro" },
-  ];
+  // Filter invoices based on search and status
+  const filteredInvoices = invoices.filter(invoice => {
+    const matchesSearch = searchQuery === "" || 
+      invoice.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      invoice.space.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesStatus = statusFilter === "all" || invoice.status === statusFilter;
+    
+    return matchesSearch && matchesStatus;
+  });
 
   const getStatusBadge = (status) => {
     const config = {
@@ -87,7 +209,7 @@ export default function BillingPage({ params }) {
 
       {/* Stats */}
       <div className="grid gap-4 md:grid-cols-4">
-        {stats.map((stat) => {
+        {statsData.map((stat) => {
           const Icon = stat.icon;
           return (
             <Card key={stat.title}>
@@ -145,7 +267,7 @@ export default function BillingPage({ params }) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {invoices.map((invoice) => (
+              {filteredInvoices.map((invoice) => (
                 <TableRow key={invoice.id}>
                   <TableCell className="font-medium text-foreground">{invoice.id}</TableCell>
                   <TableCell>{invoice.space}</TableCell>

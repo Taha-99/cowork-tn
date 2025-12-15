@@ -19,9 +19,130 @@ import {
   Save,
   Key,
 } from "lucide-react";
+import { getSupabaseClient } from "@/lib/supabase";
 
 export default function SettingsPage({ params }) {
   const { locale } = React.use(params);
+  const [settings, setSettings] = React.useState({
+    general: {
+      platformName: "Cowork.tn",
+      supportEmail: "support@cowork.tn",
+      defaultLocale: "fr",
+      maintenanceMode: false,
+    },
+    branding: {
+      primaryColor: "#3b82f6",
+      logoUrl: "/logo.png",
+      faviconUrl: "/favicon.ico",
+    },
+    notifications: {
+      emailNotifications: true,
+      pushNotifications: true,
+      newsletterEnabled: true,
+    },
+    security: {
+      twoFactorAuth: true,
+      sessionTimeout: 30,
+      passwordPolicy: "strong",
+    },
+    api: {
+      apiKey: "sk_live_********",
+      webhookUrl: "https://webhook.cowork.tn",
+    }
+  });
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [isSaving, setIsSaving] = React.useState(false);
+
+  React.useEffect(() => {
+    loadSettings();
+  }, []);
+
+  async function loadSettings() {
+    try {
+      setIsLoading(true);
+      const supabase = getSupabaseClient();
+      
+      // Fetch settings from database
+      const { data, error } = await supabase
+        .from("settings")
+        .select("*");
+
+      if (error) {
+        console.error("Error loading settings:", error);
+        // Use default settings if table doesn't exist
+        return;
+      }
+
+      // Transform database settings into our state format
+      if (data && data.length > 0) {
+        const dbSettings = data.reduce((acc, setting) => {
+          acc[setting.category] = acc[setting.category] || {};
+          acc[setting.category][setting.key] = setting.value;
+          return acc;
+        }, {});
+
+        setSettings(prev => ({
+          ...prev,
+          general: { ...prev.general, ...dbSettings.general },
+          branding: { ...prev.branding, ...dbSettings.branding },
+          notifications: { ...prev.notifications, ...dbSettings.notifications },
+          security: { ...prev.security, ...dbSettings.security },
+          api: { ...prev.api, ...dbSettings.api },
+        }));
+      }
+    } catch (err) {
+      console.error("Error loading settings:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function saveSettings() {
+    try {
+      setIsSaving(true);
+      const supabase = getSupabaseClient();
+      
+      // Prepare settings for database
+      const settingsArray = [];
+      Object.entries(settings).forEach(([category, categorySettings]) => {
+        Object.entries(categorySettings).forEach(([key, value]) => {
+          settingsArray.push({
+            category,
+            key,
+            value: String(value),
+            updated_at: new Date().toISOString()
+          });
+        });
+      });
+
+      // Delete existing settings
+      await supabase.from("settings").delete().neq("id", 0);
+      
+      // Insert new settings
+      const { error } = await supabase
+        .from("settings")
+        .insert(settingsArray);
+
+      if (error) throw error;
+      
+      alert("Paramètres sauvegardés avec succès!");
+    } catch (err) {
+      console.error("Error saving settings:", err);
+      alert("Erreur lors de la sauvegarde des paramètres: " + err.message);
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  function handleSettingChange(category, key, value) {
+    setSettings(prev => ({
+      ...prev,
+      [category]: {
+        ...prev[category],
+        [key]: value
+      }
+    }));
+  }
 
   return (
     <div className="space-y-8">
@@ -103,9 +224,9 @@ export default function SettingsPage({ params }) {
                   defaultValue="Plateforme de gestion de coworking pour la Tunisie"
                 />
               </div>
-              <Button>
+              <Button onClick={saveSettings} disabled={isSaving}>
                 <Save className="mr-2 h-4 w-4" />
-                Enregistrer
+                {isSaving ? "Enregistrement..." : "Enregistrer"}
               </Button>
             </CardContent>
           </Card>

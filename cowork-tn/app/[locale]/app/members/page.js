@@ -5,7 +5,8 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { getTranslations } from "next-intl/server";
 import { getSpaceContext } from "@/lib/dashboard-data";
 import { getSupabaseServiceRole } from "@/lib/supabase-server";
-import { Search, QrCode, UserPlus } from "lucide-react";
+import { Search, QrCode } from "lucide-react";
+import { AddMemberDialog } from "@/components/add-member-dialog";
 
 export default async function MembersPage({ params }) {
   const { locale } = await params;
@@ -15,18 +16,39 @@ export default async function MembersPage({ params }) {
 
   let members = [];
   let loadError = null;
-  try {
-    const { data, error } = await supabase
-      .from("members")
-      .select("id,full_name,email,subscription_plan,is_active,credits,company")
-      .eq("space_id", space.id)
-      .order("full_name", { ascending: true });
+  
+  // Check if space exists
+  if (!space || !space.id) {
+    loadError = new Error("Espace non trouvé");
+  } else {
+    try {
+      // Query profiles table - only get members of this space
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, full_name, email, role, phone, avatar_url, created_at, last_sign_in_at")
+        .eq("space_id", space.id)
+        .neq("role", "super_admin") // Don't show super admins
+        .order("full_name", { ascending: true });
 
-    if (error) throw error;
-    members = data || [];
-  } catch (error) {
-    loadError = error;
-    console.error("[members] Failed to load list", error);
+      if (error) throw error;
+      
+      // Transform profiles to match the expected member format
+      members = (data || []).map(profile => ({
+        id: profile.id,
+        full_name: profile.full_name || "Non spécifié",
+        email: profile.email || "Non spécifié",
+        subscription_plan: profile.role === "admin" ? "unlimited" : "10_days", // Default plans
+        is_active: true, // Assume active if they have a profile
+        credits: profile.role === "admin" ? 999 : 10, // Default credits
+        company: "", // Not stored in profiles
+        role: profile.role,
+        phone: profile.phone,
+        last_sign_in: profile.last_sign_in_at
+      }));
+    } catch (error) {
+      loadError = error;
+      console.error("[members] Failed to load list", error);
+    }
   }
 
   const statusLabels = {
@@ -77,10 +99,7 @@ export default async function MembersPage({ params }) {
                 disabled
               />
             </div>
-            <Button className="rounded-2xl px-4" disabled>
-              <UserPlus className="mr-2 h-4 w-4" />
-              {t("addMember")}
-            </Button>
+            <AddMemberDialog spaceId={space.id} t={t} />
           </div>
           <div className="mt-6 overflow-hidden rounded-3xl border border-border/60 bg-background">
             <div className="grid grid-cols-[minmax(220px,2fr)_2fr_1fr_1fr_auto] gap-4 border-b border-border/60 px-6 py-4 text-xs font-semibold uppercase tracking-widest text-muted">

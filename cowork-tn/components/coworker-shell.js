@@ -61,36 +61,12 @@ export function CoworkerShell({ children, locale, user }) {
             </span>
           </Link>
 
-          {/* Navigation - Desktop */}
-          <nav className="hidden items-center gap-1 md:flex">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const href = `/${locale}/${item.href}`;
-              const isActive = pathname === href || pathname.startsWith(href + "/");
-              return (
-                <Link
-                  key={item.href}
-                  href={href}
-                  className={cn(
-                    "flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition-all duration-200",
-                    isActive
-                      ? "bg-primary text-primary-foreground shadow-md dark:shadow-primary/20"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                  )}
-                >
-                  <Icon className="h-4 w-4" />
-                  {t(item.labelKey)}
-                </Link>
-              );
-            })}
-          </nav>
-
           {/* User menu */}
           <div className="flex items-center gap-2">
             <LanguageSwitcherCompact locale={locale} />
             <ThemeToggle />
             <div className="h-6 w-px bg-border/50 mx-1 hidden sm:block" />
-            <DropdownMenu>
+            <DropdownMenu suppressHydrationWarning>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-10 w-10 rounded-xl p-0 hover:bg-muted">
                   <Avatar className="h-9 w-9 ring-2 ring-border/50">
@@ -157,8 +133,32 @@ export function CoworkerShell({ children, locale, user }) {
         </nav>
       </header>
 
-      {/* Main content */}
-      <main className="mx-auto max-w-7xl px-4 py-8 md:px-6">{children}</main>
+      {/* Main content with sidebar */}
+      <div className="grid gap-6 lg:grid-cols-[280px_1fr] px-6 py-6">
+        <aside className="hidden w-64 flex-col gap-1.5 rounded-2xl border border-border/50 bg-card/80 p-3 backdrop-blur-sm dark:border-border/30 dark:bg-card/60 md:flex">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const href = `/${locale}/${item.href}`;
+            const isActive = pathname === href || pathname.startsWith(href + "/");
+            return (
+              <Link
+                key={item.href}
+                href={href}
+                className={cn(
+                  "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200",
+                  isActive 
+                    ? "bg-primary text-primary-foreground shadow-md dark:shadow-primary/20" 
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                )}
+              >
+                <Icon className="h-4 w-4" />
+                {t(item.labelKey)}
+              </Link>
+            );
+          })}
+        </aside>
+        <main className="space-y-6">{children}</main>
+      </div>
     </div>
   );
 }
